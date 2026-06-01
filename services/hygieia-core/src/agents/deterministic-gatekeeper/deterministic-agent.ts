@@ -1,160 +1,181 @@
 import { GateKeeperInput } from "./schemas/input.schema.js";
 import { GateKeeperOutput } from "./schemas/output.schema.js";
+
 /**
- * Observables that strongly indicate an ESI-2 presentation
- * according to ESI v5 high-risk criteria.
- *
- * These are the cases we should NEVER allow Agent 2
- * to downgrade.
+ * Single Source of Truth: High Risk Observables
  */
 const HARD_HIGH_RISK = new Set([
-  "DIFFICULTY_BREATHING",
-  "BLUISH_LIPS_OR_FACE",
-
-  "CRUSHING_CHEST_PAIN",
-
-  "LOSS_OF_CONSCIOUSNESS",
-  "SUDDEN_CONFUSION",
-  "SLURRED_SPEECH",
-  "SUDDEN_WEAKNESS_ONE_SIDE",
-  "ACTIVE_SEIZURE",
-
-  "SEVERE_BURNS",
-  "AMPUTATION_OR_CRUSH",
-
-  "ANAPHYLAXIS_SIGNS",
-  "POISON_OR_OVERDOSE_SUSPECTED",
-
-  "SEVERE_ABDOMINAL_PAIN",
-  "COUGH_WITH_BLOOD",
-  "SEVERE_DEHYDRATION"
+  "ISCHEMIC_CHEST_PAIN",
+  "ACUTE_STROKE_SYMPTOMS",
+  "THUNDERCLAP_HEADACHE",
+  "HEADACHE_WITH_NUCHAL_RIGIDITY",
+  "IMMUNOCOMPROMISED_WITH_FEVER",
+  "TRANSPLANT_RECIPIENT_WITH_FEVER",
+  "NEONATAL_FEVER",
+  "PREGNANT_OR_POSTPARTUM_HIGH_BP",
+  "POSTPARTUM_HEAVY_BLEEDING",
+  "ABDOMINAL_PAIN_PREGNANCY_CAPABLE",
+  "SUSPECTED_TESTICULAR_TORSION",
+  "HIGH_FALL_MECHANISM",
+  "SEVERE_MVC_MECHANISM",
+  "COMPROMISED_NEUROVASCULAR_LIMB",
+  "BUTTON_BATTERY_OR_MAGNET_INGESTION",
+  "PEDIATRIC_RESPIRATORY_STRUGGLE",
+  "SEVERE_SYSTEMIC_PAIN",
+  "ACUTE_MENTAL_STATUS_CHANGE",
+  "SEVERE_PSYCHOLOGICAL_DISTRESS",
+  "SEXUAL_ASSAULT_OR_DOMESTIC_VIOLENCE"
 ]);
 
 /**
- * Decision Point A
- * ESI 1
+ * Safe vitals accessor (prevents crashes)
  */
+function getVitals(input: GateKeeperInput) {
+  return input.vitals ?? {};
+}
+
+/* =========================
+   ESI-1 LOGIC
+========================= */
 function requiresESI1(input: GateKeeperInput, reasons: string[]): boolean {
-  const { vitals, observables } = input;
+  const v = getVitals(input);
+  const obs = input.observables ?? [];
+  const ageGroup = input.ageGroup;
 
   if (input.lifesavingIntervention) {
-    reasons.push("Immediate lifesaving intervention required");
-
+    reasons.push("Lifesaving intervention flag set.");
     return true;
   }
 
-  if (vitals.levelOfConsciousness === "UNRESPONSIVE") {
-    reasons.push("Patient is unresponsive");
-
+  if (
+    v.levelOfConsciousness === "UNRESPONSIVE" ||
+    v.levelOfConsciousness === "PAINFUL" ||
+    obs.includes("UNRESPONSIVE_OR_OBTUNDED")
+  ) {
+    reasons.push("Severe consciousness impairment detected.");
     return true;
   }
 
-  if (vitals.spo2 < 85 && observables.includes("DIFFICULTY_BREATHING")) {
-    reasons.push("Severe hypoxia with respiratory distress");
-
+  if (
+    (v.spo2 !== undefined && v.spo2 < 90) ||
+    obs.includes("SEVERE_RESPIRATORY_DISTRESS") ||
+    obs.includes("PEDIATRIC_RESPIRATORY_STRUGGLE")
+  ) {
+    reasons.push("Severe respiratory compromise detected.");
     return true;
   }
 
-  if (vitals.systolicBP < 80 && observables.includes("CRUSHING_CHEST_PAIN")) {
-    reasons.push("Profound hypotension with chest pain");
-
+  if (ageGroup === "NEONATE" && obs.includes("FLACCID_INFANT")) {
+    reasons.push("Critical neonatal presentation.");
     return true;
   }
 
-  if (vitals.systolicBP < 80 && observables.includes("SEVERE_BLEEDING")) {
-    reasons.push("Profound hypotension with severe bleeding");
-
+  if (
+    (v.systolicBP !== undefined && v.systolicBP < 80) ||
+    obs.includes("PROFOUND_HYPOTENSION_SHOCK") ||
+    obs.includes("ISCHEMIC_CHEST_PAIN")
+  ) {
+    reasons.push("Profound circulatory collapse suspected.");
     return true;
   }
 
   return false;
 }
 
-/**
- * Deterministic high-risk validator.
- *
- * Used only to catch obvious under-triage.
- */
+/* =========================
+   ESI-2 LOGIC
+========================= */
 function shouldForceHighRisk(
   input: GateKeeperInput,
   reasons: string[]
 ): boolean {
-  for (const observable of input.observables) {
-    if (HARD_HIGH_RISK.has(observable)) {
-      reasons.push(`High-risk observable detected: ${observable}`);
+  const v = getVitals(input);
+  const obs = input.observables ?? [];
+  const ageGroup = input.ageGroup;
+
+  // 1. HARD HIGH RISK OBSERVABLES (ONLY SOURCE OF TRUTH)
+  for (const o of obs) {
+    if (HARD_HIGH_RISK.has(o)) {
+      reasons.push(`High-risk observable override: ${o}`);
       return true;
     }
   }
 
-  const v = input.vitals;
-
+  // 2. Pain + severity alignment
   if (
-    v.levelOfConsciousness === "VERBAL" ||
-    v.levelOfConsciousness === "PAINFUL"
+    (v.painScore !== undefined && v.painScore >= 7) ||
+    obs.includes("SEVERE_SYSTEMIC_PAIN")
   ) {
-    reasons.push(`Altered consciousness: ${v.levelOfConsciousness}`);
-
+    reasons.push("Severe pain syndrome detected.");
     return true;
   }
 
-  if (v.spo2 < 92 && input.observables.includes("DIFFICULTY_BREATHING")) {
-    reasons.push("Hypoxia with respiratory distress");
+  // 3. Neonatal fever (safe optional check)
+  if (
+    ageGroup === "NEONATE" &&
+    v.temperatureC !== undefined &&
+    v.temperatureC > 38
+  ) {
+    reasons.push("Neonatal fever detected.");
+    return true;
+  }
 
+  // 4. Obstetric instability
+  if (
+    obs.includes("PREGNANT_OR_POSTPARTUM_HIGH_BP") &&
+    v.systolicBP !== undefined &&
+    (v.systolicBP > 150 || v.systolicBP < 90)
+  ) {
+    reasons.push("Obstetric hypertensive instability.");
     return true;
   }
 
   return false;
 }
 
-/**
- * Decision Point C
- */
+/* =========================
+   VITAL SAFETY CHECK (FIXED)
+========================= */
+function hasDangerVitalSigns(input: GateKeeperInput): boolean {
+  const v = getVitals(input);
+  const ageGroup = input.ageGroup;
+
+  if (v.spo2 !== undefined && v.spo2 < 92) return true;
+
+  switch (ageGroup) {
+    case "NEONATE":
+      return (v.heartRate ?? 0) > 190 || (v.respiratoryRate ?? 0) > 60;
+
+    case "PEDIATRIC":
+      return (v.heartRate ?? 0) > 140 || (v.respiratoryRate ?? 0) > 40;
+
+    case "ADULT":
+    case "GERIATRIC":
+      return (v.heartRate ?? 0) > 100 || (v.respiratoryRate ?? 0) > 20;
+
+    default:
+      return false;
+  }
+}
+
+/* =========================
+   RESOURCE LOGIC
+========================= */
 function resourceBasedESI(predictedResources: number): 3 | 4 | 5 {
-  if (predictedResources <= 0) {
-    return 5;
-  }
-
-  if (predictedResources === 1) {
-    return 4;
-  }
-
+  if (predictedResources <= 0) return 5;
+  if (predictedResources === 1) return 4;
   return 3;
 }
 
-/**
- * Decision Point D
- *
- * Handbook reassessment vitals.
- */
-function hasDangerVitals(input: GateKeeperInput): boolean {
-  const v = input.vitals;
-
-  return (
-    v.heartRate > 100 ||
-    v.respiratoryRate > 20 ||
-    v.spo2 < 92 ||
-    v.systolicBP < 90 ||
-    v.levelOfConsciousness !== "ALERT"
-  );
-}
-
-function hasCriticalVitals(input: GateKeeperInput): boolean {
-  const v = input.vitals;
-
-  return v.spo2 < 90 || v.systolicBP < 90 || v.levelOfConsciousness !== "ALERT";
-}
-
+/* =========================
+   MAIN ORCHESTRATOR
+========================= */
 export async function runGatekeeper(
   input: GateKeeperInput
 ): Promise<GateKeeperOutput> {
   const reasons: string[] = [];
 
-  /**
-   * =====================================
-   * Decision Point A
-   * ESI 1
-   * =====================================
-   */
+  // STEP 1: ESI-1
   if (requiresESI1(input, reasons)) {
     return {
       finalESI: 1,
@@ -163,31 +184,16 @@ export async function runGatekeeper(
     };
   }
 
-  /**
-   * =====================================
-   * Validate Agent 2 high-risk decision
-   * =====================================
-   */
-  let correctedHighRisk = input.highRisk;
+  // STEP 2: ESI-2
+  let isHighRisk = input.highRisk;
 
-  if (!input.highRisk) {
-    const forceHighRisk = shouldForceHighRisk(input, reasons);
-
-    if (forceHighRisk) {
-      correctedHighRisk = true;
-
-      reasons.push("Agent 3 corrected highRisk=false → true");
-    }
+  if (!isHighRisk || shouldForceHighRisk(input, reasons)) {
+    isHighRisk = true;
+    reasons.push("High-risk status enforced by Agent 3.");
   }
 
-  /**
-   * =====================================
-   * Decision Point B
-   * ESI 2
-   * =====================================
-   */
-  if (correctedHighRisk) {
-    reasons.push("ESI 2 due to high-risk presentation");
+  if (isHighRisk) {
+    reasons.push("Assigned ESI-2 due to high-risk presentation.");
     return {
       finalESI: 2,
       overridden: input.predictedESI !== 2,
@@ -195,8 +201,14 @@ export async function runGatekeeper(
     };
   }
 
-  if (hasCriticalVitals(input)) {
-    reasons.push("The vitals show the patient is critical");
+  // STEP 3: Resource baseline
+  const resourceESI = resourceBasedESI(input.predictedResources);
+
+  reasons.push(`Resource-based ESI: ${resourceESI}`);
+
+  // STEP 4: Vital override (safe now)
+  if (resourceESI === 3 && hasDangerVitalSigns(input)) {
+    reasons.push("Vital sign escalation to ESI-2.");
     return {
       finalESI: 2,
       overridden: true,
@@ -204,34 +216,9 @@ export async function runGatekeeper(
     };
   }
 
-  /**
-   * =====================================
-   * Decision Point C
-   * Resource Prediction
-   * =====================================
-   */
-  const esi = resourceBasedESI(input.predictedResources);
-
-  reasons.push(`Predicted resources: ${input.predictedResources}`);
-
-  /**
-   * =====================================
-   * Decision Point D
-   * Vital Sign Reassessment
-   * =====================================
-   */
-  if (esi === 3 && hasDangerVitals(input)) {
-    reasons.push("Dangerous vital signs triggered ESI upgrade");
-    return {
-      finalESI: 2,
-      overridden: esi !== input.predictedESI,
-      reasons
-    };
-  }
-
   return {
-    finalESI: esi,
-    overridden: esi !== input.predictedESI,
+    finalESI: resourceESI,
+    overridden: resourceESI !== input.predictedESI,
     reasons
   };
 }

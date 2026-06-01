@@ -10,25 +10,6 @@ export class OllamaProvider {
     systemPrompt,
     userPrompt
   }: GenerateOptions<TInput, TOutput>): Promise<TOutput> {
-    // const response = await client.chat({
-    //   model: process.env.OLLAMA_MODEL!,
-    //   messages: [
-    //     {
-    //       role: "system",
-    //       content: systemPrompt
-    //     },
-    //     {
-    //       role: "user",
-    //       content: JSON.stringify(userPrompt)
-    //     }
-    //   ],
-    //   // format: "json",
-    //   options: {
-    //     // Optional: Reduce temperature to make JSON generation faster and more deterministic
-    //     temperature: 0
-    //   }
-    // });
-    // return schema.parse(JSON.parse(response.message.content));
     const stream = await client.chat({
       model: process.env.OLLAMA_MODEL!,
       messages: [
@@ -50,12 +31,10 @@ export class OllamaProvider {
     });
     let raw = "";
     for await (const chunk of stream) {
-      console.log(chunk.message.content);
       raw += chunk.message.content;
     }
 
     const clean = raw.replace(/```json|```/g, "").trim();
-    console.log(clean);
     return JSON.parse(clean);
   }
 }

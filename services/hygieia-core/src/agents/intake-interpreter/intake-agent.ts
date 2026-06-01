@@ -3,20 +3,20 @@
 import { intakeOutputSchema } from "./schemas/output.schema.js";
 import { llm } from "../../services/llm/llm.services.js";
 import { buildIntakeInterpreterPrompt } from "./intake.prompt.js";
-import { intakeInputSchema } from "./schemas/input.schema.js";
+import { InputSchema, intakeInputSchema } from "./schemas/input.schema.js";
 import { observableSchema } from "../../../../../packages/zod-contracts/dist/observables.schema.js";
 
 export function mergeObservables(selected: string[], extracted: string[]) {
   return [...new Set([...selected, ...extracted])];
 }
 
-export async function extractObservables(transcript: string | undefined) {
+export async function extractObservables(input: InputSchema) {
   // TODO: Azure OpenAI structured output
-  const systemPrompt = buildIntakeInterpreterPrompt();
+  const systemPrompt = buildIntakeInterpreterPrompt(input.ageGroup);
   const result = await llm.generateStructuredOutput({
     systemPrompt,
     userPrompt: {
-      transcript
+      transcript: input.transcript
     },
     schema: intakeOutputSchema
   });
@@ -50,7 +50,7 @@ export async function runIntakeInterpreter(rawInput: unknown) {
   }
 
   // Extracts observables using LLM extraction technique
-  const extracted = await extractObservables(input.transcript);
+  const extracted = await extractObservables(input);
 
   const observables = mergeObservables(
     input.selectedObservables,

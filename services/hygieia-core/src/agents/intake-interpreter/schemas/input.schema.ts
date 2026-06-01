@@ -1,8 +1,10 @@
 import { z } from "zod";
-import { observableSchema } from "@hygieiashield/zod-contracts";
+import { observableSchema, ageGroupSchema } from "@hygieiashield/zod-contracts";
 
 export const intakeInputSchema = z.object({
   transcript: z.string().optional(),
-
-  selectedObservables: z.array(observableSchema).default([])
+  selectedObservables: z.array(observableSchema).default([]),
+  ageGroup: ageGroupSchema
 });
+
+export type InputSchema = z.infer<typeof intakeInputSchema>;
