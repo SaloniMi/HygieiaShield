@@ -29,7 +29,8 @@ export default tseslint.config(
       }
     },
     rules: {
-      "react/react-in-jsx-scope": "off" // Uncomment this if you are using React 17+
+      "react/react-in-jsx-scope": "off", // Uncomment this if you are using React 17+
+      "react/prop-types": "off"
     }
   },
   {

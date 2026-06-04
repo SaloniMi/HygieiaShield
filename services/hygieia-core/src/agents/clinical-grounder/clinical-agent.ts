@@ -1,4 +1,3 @@
-// intake-agent.ts
 import { llm } from "../../services/llm/llm.services.js";
 import { buildESILevelCalculatorPrompt } from "./clinical.prompt.js";
 import { ESIInputSchema } from "./schemas/input.schema.js";
@@ -17,10 +16,9 @@ export async function runESIEvaluator(rawInput: unknown) {
   );
 
   const systemPrompt = buildESILevelCalculatorPrompt(
-    handbookSections.join("\n\n")
+    handbookSections.join("\n\n"),
+    input.ageGroup
   );
-
-  console.log(systemPrompt);
 
   // TODO: Azure OpenAI structured output
   // Step 1 - Retrieve information from the ESI handbook and structure the
@@ -33,6 +31,5 @@ export async function runESIEvaluator(rawInput: unknown) {
 
   // Step 2 - Build the ESI grounding retrieval result to calculate the final ESI level
   const ESIResults = buildESIResult(result);
-  console.log(ESIResults);
   return ESIResults.esiLevel;
 }

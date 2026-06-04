@@ -61,7 +61,8 @@ export const vitalsSchema = z.object({
     .describe("Is the patient currently receiving oxygen support?"),
 
   //  AVPU Vitals
-  levelOfConsciousness: z.enum(["ALERT", "VERBAL", "PAINFUL", "UNRESPONSIVE"])
+  levelOfConsciousness: z.enum(["ALERT", "VERBAL", "PAINFUL", "UNRESPONSIVE"]),
 
-  // TODO: Add Pain Score
+  // Pain Score
+  painScore: z.number().int().min(0).max(10).optional()
 });

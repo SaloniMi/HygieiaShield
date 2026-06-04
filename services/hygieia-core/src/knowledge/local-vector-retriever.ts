@@ -44,7 +44,6 @@ export class LocalVectorRetriever implements HandbookRetriever {
     );
 
     const docs = await this.vectorStore.similaritySearch(query, limit);
-    console.log(docs);
     return docs.map((doc) => doc.pageContent);
   }
 }
