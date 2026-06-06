@@ -8,10 +8,11 @@ const client = new Ollama({
 export class OllamaProvider {
   async generateStructuredOutput<TInput, TOutput>({
     systemPrompt,
-    userPrompt
+    userPrompt,
+    model
   }: GenerateOptions<TInput, TOutput>): Promise<TOutput> {
     const stream = await client.chat({
-      model: process.env.OLLAMA_MODEL!,
+      model: model ?? process.env.OLLAMA_MODEL!,
       messages: [
         {
           role: "system",

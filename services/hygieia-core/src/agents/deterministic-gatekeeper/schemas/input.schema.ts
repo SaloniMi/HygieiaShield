@@ -10,9 +10,6 @@ export const gateKeeperInputSchema = z.object({
   observables: z.array(observableSchema),
   vitals: vitalsSchema.optional(),
   esiLevel: ESILevelSchema,
-  lifesavingIntervention: z.boolean(),
-  highRisk: z.boolean(),
-  predictedResources: z.number().int().min(0),
   ageGroup: ageGroupSchema
 });
 

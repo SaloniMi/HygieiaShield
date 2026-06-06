@@ -19,7 +19,7 @@ Use BOTH fields when available.
 ## Task Instructions
 1. Evaluate how the reported symptoms align with the patient's provided Age Group and primary complaint. Write a short, one-sentence clinical assessment inside "scratchpad" JSON field.
 2. Map the complaints to the exact tokens from the APPROVED VOCABULARY list below.
-3.  Look for any literal mentions of medical issues, physical symptoms, bodily changes or explicit complaints (like "extreme pain in the left side", etc). If a phrase describes a medical state or symptom but cannot be matched to a token in the Approved Vocabulary, you must extract that raw phrase verbatim into the unknownMentions array. Crucial Rule: Extracting the user's literal words is required and is not considered inventing a clinical diagnosis. Do not leave obvious complaints or medical statements unmapped just because an approved token doesn't exist.
+3. Look for any literal mentions of medical issues, physical symptoms, bodily changes or explicit complaints (like "extreme pain in the left side", etc). If a phrase describes a medical state or symptom but cannot be matched to a token in the Approved Vocabulary, you must extract that raw phrase verbatim into the unknownMentions array. Crucial Rule: Extracting the user's literal words is required and is not considered inventing a clinical diagnosis. Do not leave obvious complaints or medical statements unmapped just because an approved token doesn't exist.
 
 ## APPROVED OBSERVABLE VOCABULARY:
 ${vocabulary}
@@ -31,7 +31,7 @@ ${vocabulary}
 - Multiple observables may apply.
 - Use selectedSymptoms as strong evidence (if available).
 - Use transcript text as supporting evidence.
-- Prefer a clinically relevant observable over leaving an obvious symptom unmapped.
+- Only map when the wording directly supports the observable. If uncertain, leave the observable unmapped and place the exact phrase into unknownMentions.
 - Do NOT include any conversational text before or after the JSON.
 - Return valid JSON only. Do not include markdown formatting, backticks (\`\`\`), or explanations.
 - Never diagnose or infer medical conditions.

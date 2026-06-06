@@ -1,6 +1,6 @@
 'use client';
 import 'leaflet/dist/leaflet.css';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import PatientInfoPage from '@/flows/PatientInfoPage';
 import SymptomIntakePage from '@/flows/SymptomIntakePage';
 import DecisionPage from '@/flows/DecisionPage';
@@ -17,40 +17,8 @@ export default function Home() {
     ageGroup: '',
     symptoms: {},
     location: {},
-    // TODO: Remove later
-    decision: {
-      title: "Go to ER — critical",
-      subtitle: "Chest pain · Cyanosis · Breathing difficulty",
-      badgeLabel: "Critical",
-      badgeStatus: "critical",
-
-
-      recommendedFacility: {
-        name: "St. Mary's ER",
-        distance: "1.8 mi",
-        travelTime: "6 min",
-        coordinates: [19.0748, 72.8815],
-        status: "Beds available",
-        waitTime: "42 min wait",
-        reservationNote: "Soft reservation · 45 min window",
-        loadPercent: 75
-      },
-
-
-      instructions: [
-        "Keep them sitting upright — do not lay them flat.",
-        "Loosen any tight clothing around chest or neck.",
-        "Do not give food, water, or medication."
-      ]
-    },
+    decision: {}
   });
-
-  useEffect(() => {
-    if (step === 3) {
-      console.log('Final formData:', formData);
-    }
-  }, [step]);
-
 
   const nextStep = () => setStep((s) => Math.min(s + 1, totalSteps));
 

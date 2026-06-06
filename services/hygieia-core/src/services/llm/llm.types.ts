@@ -6,4 +6,5 @@ export interface GenerateOptions<TInput, TOutput> {
   userPrompt: TInput;
 
   schema: ZodSchema<TOutput>;
+  model?: string;
 }

@@ -46,7 +46,6 @@ export async function ensureIndexes() {
 export async function createFHIRRecord(record) {
     try {
         const db = await connectMongo();
-        console.log(record)
         return db.collection(COLLECTION).insertOne({
             ...record,
             createdAt: new Date().toISOString(),
@@ -103,17 +102,69 @@ export async function updateEncounter(triageId, patch) {
     );
 }
 
-/**
- * APPEND VITALS (for later Agent 3 integration)
- */
-export async function appendVitals(triageId, observation) {
+export async function getPatientRecords() {
+    const db = await connectMongo();
+
+    return db
+        .collection(COLLECTION)
+        .find({})
+        .sort({ createdAt: -1 })
+        .toArray();
+}
+
+export async function findByPatientId(patientId) {
+    const db = await connectMongo();
+
+    return db.collection(COLLECTION).findOne({
+        "patient.id": patientId
+    });
+}
+
+
+export async function updateDoctorBrief(token, doctorBrief) {
     const db = await connectMongo();
 
     return db.collection(COLLECTION).updateOne(
-        { triageId },
+        { token },
+        {
+            $set: {
+                "derived.doctorBrief": {
+                    ...doctorBrief,
+                    generatedAt: new Date().toISOString()
+                },
+                updatedAt: new Date().toISOString()
+            }
+        }
+    );
+}
+
+export async function updateDoctorBriefStatus(token, status) {
+    const db = await connectMongo();
+
+    return db.collection(COLLECTION).updateOne(
+        { token },
+        {
+            $set: {
+                "derived.doctorBrief.status": status,
+                updatedAt: new Date().toISOString()
+            }
+        }
+    );
+}
+
+/**
+ * APPEND VITALS
+ */
+export async function appendVitals(token, observations) {
+    const db = await connectMongo();
+
+    return db.collection(COLLECTION).updateOne(
+        { token },
         {
             $push: {
-                vitals: observation
+                observations: {
+                    $each: observations
+                }
             },
             $set: {
                 updatedAt: new Date().toISOString()

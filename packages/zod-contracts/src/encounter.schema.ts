@@ -21,7 +21,8 @@ export const encounterSchema = z.object({
   patientId: z.string(),
   status: encounterStatusSchema,
   esiLevel: ESILevelSchema,
-  facilityId: z.string().optional()
+  facilityId: z.string().optional(),
+  unknownMentions: z.array(z.string()).optional()
 });
 
 export type ESILevelType = z.infer<typeof ESILevelSchema>;

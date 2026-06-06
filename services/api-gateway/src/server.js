@@ -13,15 +13,19 @@ dotenv.config();
 
 const PORT = process.env.PORT || 4000;
 
-
 async function bootstrap() {
-    await connectMongo();        // establish DB connection first
-    await ensureIndexes();       // then ensure indexes exist
+    await connectMongo();
+    await ensureIndexes();
+
     const server = app.listen(PORT, () => {
         console.log(`API Gateway running on port ${PORT}`);
     });
-    server.requestTimeout = 10 * 60 * 1000;
-    server.headersTimeout = 10 * 60 * 1000 + 5000;
+
+    // 20 minutes
+    server.requestTimeout = 20 * 60 * 1000;
+
+    // Must be greater than requestTimeout
+    server.headersTimeout = 20 * 60 * 1000 + 5000;
 }
 
 bootstrap();

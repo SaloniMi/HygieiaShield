@@ -1,6 +1,7 @@
 import { runTriageWorkflow } from '@hygieiashield/core';
 import { processTriage } from '../services/triage.service.js';
 import { createFHIRRecord } from '../db/repositories/fhir.repository.js';
+import { generateDoctorBriefAsync } from '../services/generate-doctor-brief.service.js';
 
 export async function triagePatient(req, res, next) {
     try {
@@ -8,6 +9,13 @@ export async function triagePatient(req, res, next) {
         const result = await runTriageWorkflow(requestBody);
         const { response = {}, persistence = {} } = result ?? {};
         await createFHIRRecord(persistence)
+        generateDoctorBriefAsync({
+            token: response.token,
+            ageGroup: requestBody.ageGroup,
+            observables: response.observables ?? [],
+            unknownMentions: response.unknownMentions ?? [],
+            esiLevel: response.finalESI
+        });
         res.status(200).json({
             success: true,
             data: response

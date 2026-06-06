@@ -30,7 +30,11 @@ export function buildEncounter(input: EncounterFHIRType) {
       {
         url: "https://hygieia.dev/facility-id",
         valueString: input.facilityId
-      }
+      },
+      ...(input.unknownMentions ?? []).map((mention) => ({
+        url: "https://hygieia.dev/patient-reported-note",
+        valueString: mention
+      }))
     ]
   };
 }

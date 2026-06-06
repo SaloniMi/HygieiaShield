@@ -1,5 +1,5 @@
 {
-  "name": "@hygieia-shield/api-gateway",
+  "name": "@hygieiashield/api-gateway",
   "version": "1.0.0",
   "main": "src/server.js",
   "type": "module",

@@ -12,6 +12,7 @@ export function buildFHIRBundleForPatient(input: {
   patientName: string;
   ageGroup: AgeGroupType;
   observables: ObservablesType;
+  unknownMentions?: string[];
   esiLevel: ESILevelType;
   facilityId?: string;
 }) {
@@ -30,7 +31,8 @@ export function buildFHIRBundleForPatient(input: {
     patientId: patient.id,
     esiLevel: input.esiLevel,
     status: "PLANNED",
-    facilityId: input.facilityId ?? ""
+    facilityId: input.facilityId ?? "",
+    unknownMentions: input.unknownMentions ?? []
   });
 
   return {
