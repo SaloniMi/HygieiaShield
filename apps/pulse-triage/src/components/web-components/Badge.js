@@ -64,7 +64,7 @@ export default function Badge({
     gap-1.5
     font-medium
     rounded-full
-    whitespace-nowrap
+    whitespace-normal break-words
     transition-all
     duration-200
     ${sizeStyles[size]}

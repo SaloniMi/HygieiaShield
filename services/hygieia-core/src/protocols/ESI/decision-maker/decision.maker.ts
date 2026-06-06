@@ -1,4 +1,5 @@
-import type { ESIDecisionSignals, ESILevel, ESIResult } from "./types.js";
+import type { ESIDecisionSignals, ESIResult } from "./types.js";
+import { ESILevelType } from "@hygieiashield/zod-contracts";
 
 /**
  * Implements ESI v5 decision flow.
@@ -7,7 +8,7 @@ import type { ESIDecisionSignals, ESILevel, ESIResult } from "./types.js";
  * This is deterministic clinical logic.
  * No AI reasoning should exist here.
  */
-export function calculateESI(signals: ESIDecisionSignals): ESILevel {
+export function calculateESI(signals: ESIDecisionSignals): ESILevelType {
   if (signals.lifesavingIntervention) {
     return 1;
   }
@@ -32,4 +33,30 @@ export function buildESIResult(signals: ESIDecisionSignals): ESIResult {
     ...signals,
     esiLevel: calculateESI(signals)
   };
+}
+
+export function decideStatusBasedOnESILevel(esiLevel: ESILevelType) {
+  switch (esiLevel) {
+    case 1:
+    case 2:
+      return {
+        status: "critical",
+        tag: "Critical"
+      };
+    case 3:
+      return {
+        status: "warning",
+        tag: "Urgent"
+      };
+    case 4:
+      return {
+        status: "info",
+        tag: "Standard Care"
+      };
+    case 5:
+      return {
+        status: "success",
+        tag: "Non Urgent"
+      };
+  }
 }

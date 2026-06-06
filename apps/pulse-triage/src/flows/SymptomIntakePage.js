@@ -7,6 +7,7 @@ import Button from '@/components/web-components/Button';
 import VoiceSymptomInput from '@/components/calm-ui/symptom-intake-flow/VoiceInput';
 import Divider from '@/components/web-components/Divider';
 import Badge from '@/components/web-components/Badge'
+import PulseTriageLoader from '@/components/web-components/Loader';
 
 
 export default function Step2Page({
@@ -17,7 +18,7 @@ export default function Step2Page({
     const [locationStatus, setLocationStatus] = useState('idle');
     // idle | requesting | granted | denied
 
-    const hasSymptoms = data?.symptoms?.observables?.length > 0 || (data?.symptoms?.transcript?.length > 0);
+    const hasSymptoms = data?.symptoms?.selections?.length > 0 || (data?.symptoms?.transcript?.length > 0);
     const continueDisabled =
         !hasSymptoms || locationStatus !== 'granted';
 
@@ -28,8 +29,10 @@ export default function Step2Page({
 
         async function fetchAddress() {
             try {
+                const API_GATEWAY = process.env.NEXT_PUBLIC_API_GATEWAY_URL;
+
                 const res = await fetch(
-                    `/api/location/reverse-geocode?lat=${data.location.lat}&lng=${data.location.lng}`
+                    `${API_GATEWAY}/location/reverse-geocode?lat=${data.location.lat}&lng=${data.location.lng}`
                 );
 
                 const json = await res.json();
@@ -44,6 +47,7 @@ export default function Step2Page({
                     }));
                 }
             } catch (e) {
+                console.debug(e)
                 // fallback silently
             }
         }
@@ -114,11 +118,45 @@ export default function Step2Page({
         };
     }, [setData]);
 
-    const handleContinue = () => {
-        if (continueDisabled) return;
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        onNext();
+    const handleContinue = async () => {
+        if (continueDisabled || isSubmitting) return;
+
+        try {
+            setIsSubmitting(true);
+
+            const start = Date.now();
+            const API_GATEWAY = process.env.NEXT_PUBLIC_API_GATEWAY_URL;
+            const response = await fetch(`${API_GATEWAY}/pulse-triage`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            });
+
+            console.log('Duration:', Date.now() - start, 'ms');
+            console.log('Status:', response.status);
+
+            if (!response.ok) {
+                throw new Error('Triage request failed');
+            }
+
+            const result = await response.json();
+
+            setData((prev) => ({
+                ...prev,
+                decision: result.data,
+            }));
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            onNext();
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const locationLabel =
@@ -126,8 +164,16 @@ export default function Step2Page({
             ? data.location.address ?? "Location Detected"
             : 'Detecting location...';
 
+    // if (isSubmitting) {
+    //     return <PulseTriageLoader />;
+    // }
     return (
         <>
+            {isSubmitting && (
+                <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/90">
+                    <PulseTriageLoader />
+                </div>
+            )}
             <div className="space-y-6">
                 {/* <ScreenTitle
                     title="What are the symptoms?"
@@ -162,25 +208,6 @@ export default function Step2Page({
 
 
                 <div className="space-y-5">
-                    {/* <VoiceSymptomInput
-                        isListening={isListening}
-                        onListeningChange={setIsListening}
-                        transcript={data.symptoms.transcript}
-                        onTranscript={(text) =>
-                            setData((prev) => ({
-                                ...prev,
-                                symptoms: {
-                                    ...prev.symptoms,
-                                    transcript: [
-                                        prev.symptoms?.transcript,
-                                        text,
-                                    ]
-                                        .filter(Boolean)
-                                        .join(' '),
-                                },
-                            }))
-                        }
-                    /> */}
 
                     <VoiceSymptomInput
                         transcript={data?.symptoms?.transcript || ''}
@@ -204,16 +231,16 @@ export default function Step2Page({
 
 
 
-                    <Divider text="or select below" />
+                    <Divider text="Common Symptoms" />
 
                     <SymptomGrid
-                        value={data.symptoms.observables}
-                        onChange={(observables) =>
+                        value={data.symptoms.selections}
+                        onChange={(selections) =>
                             setData((prev) => ({
                                 ...prev,
                                 symptoms: {
                                     ...prev.symptoms,
-                                    observables,
+                                    selections,
                                 },
                             }))
                         }

@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 
 import locationRoutes from './routes/location.routes.js';
+import triageRoutes from './routes/triage.routes.js';
 
 const app = express();
 
@@ -14,5 +15,7 @@ app.use(morgan('dev'));
 
 
 app.use('/location', locationRoutes);
+app.use('/pulse-triage', triageRoutes);
+
 
 export default app;

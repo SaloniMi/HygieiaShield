@@ -3,10 +3,12 @@
   "version": "1.0.0",
   "private": true,
   "description": "Core orchestration, routing, validation and agent runtime for Project HygieiaShield",
-  "main": "src/server.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "type": "module",
   "scripts": {
-    "dev": "node src/server.js",
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
     "start": "node src/server.js",
     "lint": "eslint ."
   }

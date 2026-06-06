@@ -69,6 +69,8 @@ export const observableSchema = z.enum([
   "MILD_RASH_NO_DISTRESS" // Localized dermatological presentation, completely stable vitals (0 resources) [cite: 262]
 ]);
 
-export const observablesSchema = z.object({
-  observables: z.array(observableSchema)
-});
+export const observablesSchema = z.array(observableSchema);
+
+export type ObservableType = z.infer<typeof observableSchema>;
+
+export type ObservablesType = ObservableType[];

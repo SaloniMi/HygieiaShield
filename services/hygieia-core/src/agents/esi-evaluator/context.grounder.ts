@@ -1,4 +1,4 @@
-import { getRetriever } from "../../knowledge/handbook.initator.js";
+import { getRetriever } from "../../services/handbook-vector-search/handbook.initator.js";
 
 export async function retrieveESIContext(
   observables: string[],

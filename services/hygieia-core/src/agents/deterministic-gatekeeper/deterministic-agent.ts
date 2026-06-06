@@ -1,5 +1,6 @@
 import { GateKeeperInput } from "./schemas/input.schema.js";
 import { GateKeeperOutput } from "./schemas/output.schema.js";
+import { VitalsType } from "@hygieiashield/zod-contracts";
 
 /**
  * Single Source of Truth: High Risk Observables
@@ -30,7 +31,7 @@ const HARD_HIGH_RISK = new Set([
 /**
  * Safe vitals accessor (prevents crashes)
  */
-function getVitals(input: GateKeeperInput) {
+function getVitals(input: GateKeeperInput): Partial<VitalsType> {
   return input.vitals ?? {};
 }
 
@@ -179,7 +180,7 @@ export async function runGatekeeper(
   if (requiresESI1(input, reasons)) {
     return {
       finalESI: 1,
-      overridden: input.predictedESI !== 1,
+      overridden: input.esiLevel !== 1,
       reasons
     };
   }
@@ -187,7 +188,7 @@ export async function runGatekeeper(
   // STEP 2: ESI-2
   let isHighRisk = input.highRisk;
 
-  if (!isHighRisk || shouldForceHighRisk(input, reasons)) {
+  if (shouldForceHighRisk(input, reasons)) {
     isHighRisk = true;
     reasons.push("High-risk status enforced by Agent 3.");
   }
@@ -196,7 +197,7 @@ export async function runGatekeeper(
     reasons.push("Assigned ESI-2 due to high-risk presentation.");
     return {
       finalESI: 2,
-      overridden: input.predictedESI !== 2,
+      overridden: input.esiLevel !== 2,
       reasons
     };
   }
@@ -218,7 +219,7 @@ export async function runGatekeeper(
 
   return {
     finalESI: resourceESI,
-    overridden: resourceESI !== input.predictedESI,
+    overridden: resourceESI !== input.esiLevel,
     reasons
   };
 }
