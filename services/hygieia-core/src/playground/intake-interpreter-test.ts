@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { runIntakeInterpreter } from "../agents/intake-interpreter/index.js";
-import { runESIEvaluator } from "../agents/clinical-grounder/index.js";
+import { runESIEvaluator } from "../agents/esi-evaluator/index.js";
 
 const inputs = [
   // "He is choking and gasping but also making weird noises like he's drowning",

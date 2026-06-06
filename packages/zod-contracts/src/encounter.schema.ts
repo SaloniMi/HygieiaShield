@@ -1,25 +1,28 @@
 import { z } from "zod";
-import { patientSchema } from "./patient.schema.js";
-import { observablesSchema } from "./observables.schema.js";
-import { routingSchema } from "./routing.schema.js";
 
 export const encounterStatusSchema = z.enum([
-  "INTAKE_STARTED",
-  "ROUTING_COMPLETE",
-  "PLANNED",
-  "ARRIVED",
-  "IN_TRIAGE",
-  "COMPLETED",
-  "EXPIRED"
+  "PLANNED", // Token generated, facility recommended
+  "ARRIVED", // Patient checked in and being evaluated by hospital
+  "IN_CARE", // Being treated / admitted
+  "COMPLETED", // Discharged / encounter finished
+  "EXPIRED" // Reservation expired before arrival
+]);
+
+export const ESILevelSchema = z.union([
+  z.literal(1),
+  z.literal(2),
+  z.literal(3),
+  z.literal(4),
+  z.literal(5)
 ]);
 
 export const encounterSchema = z.object({
-  triageId: z.string().regex(/^[A-Z]+-\d+$/),
-  patient: patientSchema,
-  observables: observablesSchema,
+  token: z.string(),
+  patientId: z.string(),
   status: encounterStatusSchema,
-  routing: routingSchema,
-  createdAt: z.string().datetime(),
-  reservationExpiresAt: z.string().datetime(),
-  notes: z.string().optional()
+  esiLevel: ESILevelSchema,
+  facilityId: z.string().optional()
 });
+
+export type ESILevelType = z.infer<typeof ESILevelSchema>;
+export type EncounterFHIRType = z.infer<typeof encounterSchema>;

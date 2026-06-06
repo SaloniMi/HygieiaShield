@@ -9,5 +9,10 @@ export const ageGroupSchema = z.enum([
 
 export const patientSchema = z.object({
   patientName: z.string().min(1).max(120),
+  token: z.string(),
   ageGroup: ageGroupSchema
 });
+
+export type PatientFHIRType = z.infer<typeof patientSchema>;
+
+export type AgeGroupType = z.infer<typeof ageGroupSchema>;

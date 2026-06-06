@@ -66,3 +66,5 @@ export const vitalsSchema = z.object({
   // Pain Score
   painScore: z.number().int().min(0).max(10).optional()
 });
+
+export type VitalsType = z.infer<typeof vitalsSchema>;

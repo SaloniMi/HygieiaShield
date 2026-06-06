@@ -1,7 +1,7 @@
-import { llm } from "../../services/llm/llm.services.js";
-import { buildESILevelCalculatorPrompt } from "./clinical.prompt.js";
+import { createLLM } from "../../services/llm/llm.services.js";
+import { buildESILevelCalculatorPrompt } from "./esi.prompt.js";
 import { ESIInputSchema } from "./schemas/input.schema.js";
-import { ESIOutputSchema } from "./schemas/output.schema.js";
+import { ESIOutputSchema, ESIAnalysisSchema } from "./schemas/output.schema.js";
 import { buildESIResult } from "../../protocols/ESI/decision-maker/decision.maker.js";
 import { retrieveESIContext } from "./context.grounder.js";
 
@@ -23,13 +23,14 @@ export async function runESIEvaluator(rawInput: unknown) {
   // TODO: Azure OpenAI structured output
   // Step 1 - Retrieve information from the ESI handbook and structure the
   // analysis in a structured format.
+  const llm = createLLM();
   const result = await llm.generateStructuredOutput({
     systemPrompt,
     userPrompt: input,
-    schema: ESIOutputSchema
+    schema: ESIAnalysisSchema
   });
 
   // Step 2 - Build the ESI grounding retrieval result to calculate the final ESI level
   const ESIResults = buildESIResult(result);
-  return ESIResults.esiLevel;
+  return ESIOutputSchema.parse(ESIResults);
 }

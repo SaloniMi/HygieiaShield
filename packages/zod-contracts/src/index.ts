@@ -5,3 +5,4 @@ export * from "./routing.schema.js";
 export * from "./vitals.schema.js";
 export * from "./risk.schema.js";
 export * from "./doctor-brief.schema.js";
+export * from "./symptoms.schema.js";

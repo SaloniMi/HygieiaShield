@@ -136,7 +136,7 @@ export default function VoiceSymptomInput({
 
                     <div className="flex-1">
                         <p className={`font-semibold ${localIsListening ? 'text-red-600' : 'text-slate-900'}`}>
-                            {localIsListening ? 'Listening...' : 'Describe symptoms aloud'}
+                            {localIsListening ? 'Listening...' : 'Describe what is happening'}
                         </p>
                         <p className="mt-1 text-sm text-slate-500">
                             {localIsListening ? 'Speak naturally. Tap again when finished.' : 'Tap once to start speaking'}

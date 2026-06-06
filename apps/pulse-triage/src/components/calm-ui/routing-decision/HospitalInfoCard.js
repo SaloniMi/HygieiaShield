@@ -74,13 +74,12 @@ function MapView({ userPosition, hospitalPosition, height = 'h-40' }) {
 }
 
 export default function HospitalInfoCard({ data }) {
-    const { decision, location } = data ?? {};
+    let { decision, location } = data ?? {};
     const facility = decision?.recommendedFacility ?? null;
     if (!facility) return null;
 
-    const hasCoordinates = location?.lat && location?.lng;
-    const userPosition = hasCoordinates ? [location.lat, location.lng] : [40.7128, -74.0060];
-    const hospitalPosition = facility?.coordinates ?? [40.7150, -74.0020];
+    const userPosition = [location.lat, location.lng];
+    const hospitalPosition = [facility.latitude, facility.longitude];
 
     const [expanded, setExpanded] = useState(false);
 
@@ -105,14 +104,14 @@ export default function HospitalInfoCard({ data }) {
                 <div className="p-5">
                     <div className="flex justify-between items-start">
                         <div>
-                            <h2 className="text-xl font-bold tracking-tight">St. Marys ER</h2>
+                            <h2 className="text-xl font-bold tracking-tight">{facility.facility_name}</h2>
                             <div className="flex items-center gap-2 mt-1 text-sm font-medium opacity-90">
-                                <span className="flex items-center gap-1">⏱ 42 min wait</span>
+                                <span className="flex items-center gap-1">⏱ {facility.waitTime} min wait</span>
                                 <span>•</span>
-                                <span className="flex items-center gap-1">🛏 Beds open</span>
+                                <span className="flex items-center gap-1">🛏 Capacity open</span>
                             </div>
                         </div>
-                        <span className="text-sm font-bold tracking-tight">6 min</span>
+                        <span className="text-sm font-bold tracking-tight">{facility.travelTime} min | {(facility.distance / 1000).toFixed(2)} kms </span>
                     </div>
                 </div>
             </div>
@@ -129,9 +128,9 @@ export default function HospitalInfoCard({ data }) {
                     ))}
                 </div>
                 <div>
-                    <h3 className="text-xl font-bold text-slate-800 tracking-wide">LION-4821</h3>
+                    <h3 className="text-xl font-bold text-slate-800 tracking-wide">{decision.token}</h3>
                     <p className="text-xs font-medium text-slate-500 mt-0.5">
-                        James Wilson · show at desk
+                        {data.patientName} · show at desk
                     </p>
                 </div>
             </div>

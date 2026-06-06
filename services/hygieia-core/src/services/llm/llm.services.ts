@@ -1,6 +1,6 @@
 import { OllamaProvider } from "./providers/ollama.provider.js";
 
-function createLLM() {
+export function createLLM() {
   switch (process.env.LLM_PROVIDER) {
     case "ollama":
       return new OllamaProvider();
@@ -9,5 +9,3 @@ function createLLM() {
       throw new Error("Unsupported provider");
   }
 }
-
-export const llm = createLLM();

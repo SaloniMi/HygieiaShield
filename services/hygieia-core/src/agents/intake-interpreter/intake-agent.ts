@@ -1,22 +1,39 @@
 // intake-agent.ts
-
-import { intakeOutputSchema } from "./schemas/output.schema.js";
-import { llm } from "../../services/llm/llm.services.js";
+import { createLLM } from "../../services/llm/llm.services.js";
+import { intakeOutputSchema, IntakeOutput } from "./schemas/output.schema.js";
 import { buildIntakeInterpreterPrompt } from "./intake.prompt.js";
-import { InputSchema, intakeInputSchema } from "./schemas/input.schema.js";
-import { observableSchema } from "../../../../../packages/zod-contracts/dist/observables.schema.js";
+import { IntakeInput, intakeInputSchema } from "./schemas/input.schema.js";
+import { observableSchema } from "@hygieiashield/zod-contracts";
+import { UserSymptom } from "@hygieiashield/zod-contracts";
 
-export function mergeObservables(selected: string[], extracted: string[]) {
-  return [...new Set([...selected, ...extracted])];
+const symptomFallbackMap = {
+  STOMACH_PAIN: ["STABLE_ABDOMINAL_PAIN"],
+  CHEST_PAIN: ["STABLE_CHEST_PAIN"],
+  BREATHING_TROUBLE: ["SEVERE_RESPIRATORY_DISTRESS"],
+  ALTERED_CONSCIOUSNESS: ["UNRESPONSIVE_OR_OBTUNDED"],
+  STROKE_SIGNS: ["ACUTE_STROKE_SYMPTOMS"],
+  SEVERE_HEADACHE: ["THUNDERCLAP_HEADACHE"],
+  ALLERGIC_REACTION: ["MILD_RASH_NO_DISTRESS"],
+  TRAUMA_INJURY: ["MINOR_ORTHOPEDIC_INJURY"],
+  FEVER_INFECTION: ["STABLE_PRODUCTIVE_COUGH"],
+  CRISIS_AND_SAFETY: ["SEVERE_PSYCHOLOGICAL_DISTRESS"]
+};
+
+function fallbackSymptomsToObservables(symptoms: UserSymptom[]): string[] {
+  return [
+    ...new Set(symptoms.flatMap((symptom) => symptomFallbackMap[symptom] ?? []))
+  ];
 }
 
-export async function extractObservables(input: InputSchema) {
+export async function extractObservables(input: IntakeInput) {
   // TODO: Azure OpenAI structured output
   const systemPrompt = buildIntakeInterpreterPrompt(input.ageGroup);
+  const llm = createLLM();
   const result = await llm.generateStructuredOutput({
     systemPrompt,
     userPrompt: {
-      transcript: input.transcript
+      transcript: input.transcript,
+      selectedSymptoms: input.selectedSymptoms ?? []
     },
     schema: intakeOutputSchema
   });
@@ -35,15 +52,16 @@ export async function extractObservables(input: InputSchema) {
   });
 }
 
-export async function runIntakeInterpreter(rawInput: unknown) {
+export async function runIntakeInterpreter(
+  rawInput: unknown
+): Promise<IntakeOutput> {
   const input = intakeInputSchema.parse(rawInput);
-
   const hasTranscript = input.transcript && input.transcript.trim().length > 0;
 
   // Fast path: tap inputs only
   if (!hasTranscript) {
     return intakeOutputSchema.parse({
-      observables: input.selectedObservables,
+      observables: fallbackSymptomsToObservables(input.selectedSymptoms),
       confidence: 1,
       unknownMentions: []
     });
@@ -52,13 +70,8 @@ export async function runIntakeInterpreter(rawInput: unknown) {
   // Extracts observables using LLM extraction technique
   const extracted = await extractObservables(input);
 
-  const observables = mergeObservables(
-    input.selectedObservables,
-    extracted.observables
-  );
-
   return intakeOutputSchema.parse({
-    observables,
+    observables: extracted.observables ?? [],
     unknownMentions: extracted.unknownMentions
   });
 }
