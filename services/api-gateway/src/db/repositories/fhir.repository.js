@@ -27,7 +27,7 @@ const COLLECTION = "fhirRecords";
 /**
  * Ensure indexes exist (run once at startup)
  */
-export async function ensureIndexes() {
+export async function ensureIndexesInFHIR() {
     const db = await connectMongo();
     const col = db.collection(COLLECTION);
 
@@ -83,31 +83,56 @@ export async function searchByName(name) {
         .toArray();
 }
 
-/**
- * UPDATE ENCOUNTER STATE ONLY
- * (ESI, status, routing changes)
- */
-export async function updateEncounter(triageId, patch) {
+export async function updateEncounter(
+    token,
+    {
+        status,
+        esiLevel
+    }
+) {
     const db = await connectMongo();
 
+    const update = {
+        updatedAt: new Date().toISOString()
+    };
+
+    if (status) {
+        update["encounter.status"] = status;
+    }
+
+    if (esiLevel !== undefined) {
+        update["encounter.extension.$[esi].valueString"] = String(esiLevel);
+    }
+
     return db.collection(COLLECTION).updateOne(
-        { triageId },
+        { token },
+        { $set: update },
         {
-            $set: {
-                "encounter.status": patch.status,
-                "encounter.extension": patch.extension,
-                updatedAt: new Date().toISOString()
-            }
+            arrayFilters: [
+                {
+                    "esi.url": "https://hygieia.dev/esi-level"
+                }
+            ]
         }
     );
 }
 
-export async function getPatientRecords() {
-    const db = await connectMongo();
+export async function getPatientRecords(facilityId) {
+    if (!facilityId) {
+        throw new Error("facilityId is required");
+    }
 
+    const db = await connectMongo();
     return db
         .collection(COLLECTION)
-        .find({})
+        .find({
+            "encounter.extension": {
+                $elemMatch: {
+                    url: "https://hygieia.dev/facility-id",
+                    valueString: facilityId
+                }
+            }
+        })
         .sort({ createdAt: -1 })
         .toArray();
 }
@@ -120,6 +145,25 @@ export async function findByPatientId(patientId) {
     });
 }
 
+export async function updateClinicalAssessment(
+    token,
+    clinicalAssessment
+) {
+    const db = await connectMongo();
+
+    return db.collection(COLLECTION).updateOne(
+        { token },
+        {
+            $set: {
+                "derived.clinicalAssessment": {
+                    ...clinicalAssessment,
+                    generatedAt: new Date().toISOString()
+                },
+                updatedAt: new Date().toISOString()
+            }
+        }
+    );
+}
 
 export async function updateDoctorBrief(token, doctorBrief) {
     const db = await connectMongo();

@@ -1,13 +1,12 @@
 // encounter.builder.js
 
-import crypto from "crypto";
 import { EncounterFHIRType } from "@hygieiashield/zod-contracts";
 
 export function buildEncounter(input: EncounterFHIRType) {
   return {
     resourceType: "Encounter",
 
-    id: crypto.randomUUID(),
+    id: input.encounterId,
 
     status: input.status,
 

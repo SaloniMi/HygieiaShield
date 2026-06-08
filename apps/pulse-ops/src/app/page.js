@@ -1,144 +1,138 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import PatientQueue from '@/components/PatientQueue';
 import PatientBrief from '@/components/PatientBrief';
 import PulseOpsHeader from '@/components/PulseOpsHeader';
+import PulseOpsLoader from '@/components/Loader';
 
 export default function PulseOpsDashboard() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
   const [patients, setPatients] = useState([]);
   const [selectedPatientId, setSelectedPatientId] = useState(null);
-  const [selectedPatientBrief, setSelectedPatientBrief] = useState(null);
 
   const [isLoading, setIsLoading] = useState(false);
   const [isQueueLoading, setIsQueueLoading] = useState(true);
+  const [facility, setFacility] = useState(null);
+
+  const intervalRef = useRef(null);
+  const cancelledRef = useRef(false);
+
+  const API_GATEWAY = process.env.NEXT_PUBLIC_API_GATEWAY_URL;
 
   useEffect(() => {
-    let cancelled = false;
-
-    async function fetchQueue() {
+    // 1. Define the async function inside the effect
+    const fetchFacilityData = async () => {
       try {
-        const API_GATEWAY = process.env.NEXT_PUBLIC_API_GATEWAY_URL;
-        const response = await fetch(`${API_GATEWAY}/pulse-ops/queue`);
+        const response = await fetch(`${API_GATEWAY}/pulse-ops/facility`);
         if (!response.ok) {
-          throw new Error('Failed to fetch queue');
+          throw new Error("Failed to fetch");
         }
 
         const data = await response.json();
-
-        if (cancelled) return;
-
-        setPatients(data);
-
-        // Auto - select first patient on initial load
-        setSelectedPatientId(currentSelected => {
-          if (currentSelected) {
-            const stillExists = data.some(
-              patient => patient.id === currentSelected
-            );
-
-            if (stillExists) {
-              return currentSelected;
-            }
-          }
-
-          return data[0]?.id ?? null;
-        });
+        setFacility(data);
       } catch (error) {
-        console.error('Failed to refresh queue', error);
-      } finally {
-        if (!cancelled) {
-          setIsQueueLoading(false);
-        }
+        console.error("Error fetching facility details:", error);
+        // Optional: Add an error state handler here if needed (e.g., setError(error.message))
       }
-    }
-
-    fetchQueue();
-
-    const interval = setInterval(fetchQueue, 60000);
-
-    return () => {
-      cancelled = true;
-      clearInterval(interval);
     };
+
+    // 2. Execute it immediately
+    fetchFacilityData();
   }, []);
 
+  const fetchQueue = useCallback(async () => {
+    try {
+      const response = await fetch(`${API_GATEWAY}/pulse-ops/queue`);
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch queue");
+      }
+
+      const data = await response.json();
+
+      if (cancelledRef.current) return;
+
+      setPatients(data);
+
+      setSelectedPatientId((current) => {
+        if (current) {
+          const stillExists = data.some((p) => p.id === current);
+          if (stillExists) return current;
+        }
+
+        return data[0]?.id ?? null;
+      });
+    } catch (error) {
+      console.error("Failed to refresh queue", error);
+    } finally {
+      if (!cancelledRef.current) {
+        setIsQueueLoading(false);
+      }
+    }
+  }, [API_GATEWAY]);
+
+  // Auth redirect
   useEffect(() => {
-    if (!selectedPatientId) {
-      setSelectedPatientBrief(null);
+    if (status === "unauthenticated") {
+      router.replace("/login");
+    }
+  }, [status, router]);
+
+  // Queue polling
+  useEffect(() => {
+    if (status !== "authenticated") {
       return;
     }
 
-    let cancelled = false;
+    cancelledRef.current = false;
 
-    async function fetchPatientBrief() {
-      try {
-        const API_GATEWAY = process.env.NEXT_PUBLIC_API_GATEWAY_URL;
+    fetchQueue();
 
-        const response = await fetch(
-          `${API_GATEWAY}/pulse-ops/patients/${selectedPatientId}`
-        );
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch patient brief');
-        }
-
-        const data = await response.json();
-
-        if (!cancelled) {
-          setSelectedPatientBrief(data);
-        }
-      } catch (error) {
-        console.error('Failed to fetch patient brief', error);
-      }
-    }
-
-    // Initial fetch
-    fetchPatientBrief();
-
-    // Poll every minute while this patient is selected
-    const interval = setInterval(fetchPatientBrief, 60000);
+    intervalRef.current = setInterval(() => {
+      fetchQueue();
+    }, 180000);
 
     return () => {
-      cancelled = true;
-      clearInterval(interval);
+      cancelledRef.current = true;
+
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
     };
-  }, [selectedPatientId]);
+  }, [status, fetchQueue]);
+
+
+  if (status === "loading") {
+    return (
+      <PulseOpsLoader />
+    );
+  }
+
+  if (status === "unauthenticated") {
+    return null;
+  }
 
   const selectedPatient = patients.find(
-    patient => patient.id === selectedPatientId
+    (p) => p.id === selectedPatientId
   );
 
-  const handleAcknowledge = async () => {
-    if (!selectedPatientId) return;
 
-    setIsLoading(true);
 
-    try {
-      await fetch(
-        `/api/pulseops/patients/${selectedPatientId}/acknowledge`,
-        {
-          method: 'POST',
-        }
-      );
-
-      // Optional immediate refresh
-      const response = await fetch('/api/pulseops/queue');
-      const data = await response.json();
-
-      setPatients(data);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  // -------------------------
+  // UI
+  // -------------------------
   return (
     <div className="h-screen flex flex-col bg-[#f4f3f0] text-[#1a1a18] overflow-hidden font-sans">
-      <PulseOpsHeader />
+      <PulseOpsHeader hospitalName={facility?.name} />
 
       <div className="flex-1 grid grid-cols-1 md:grid-cols-[260px_1fr] h-[calc(100vh-48px)] overflow-hidden">
+
+        {/* QUEUE */}
         <div className="border-b md:border-b-0 md:border-r border-black/10 bg-white overflow-y-auto">
           <PatientQueue
             patients={patients}
@@ -150,22 +144,16 @@ export default function PulseOpsDashboard() {
 
         <div className="flex flex-col min-w-0 overflow-y-auto p-4 md:p-[16px] bg-[#f4f3f0]">
           <div className="flex-1 flex flex-col h-full">
-            {selectedPatient && selectedPatientBrief ? (
+
+            {selectedPatient ? (
               <PatientBrief
-                patient={selectedPatientBrief}
-                onAcknowledge={handleAcknowledge}
+                patientId={selectedPatientId}
                 isLoading={isLoading}
               />
             ) : (
               <div className="flex-1 flex flex-col items-center justify-center bg-white border border-black/10 rounded-[14px] p-6 text-center">
                 <div className="w-12 h-12 rounded-full bg-[#E6F1FB] flex items-center justify-center text-[#185FA5] mb-3">
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"

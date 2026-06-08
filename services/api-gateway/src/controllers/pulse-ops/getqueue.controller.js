@@ -46,7 +46,9 @@ function mapFHIRRecordToQueueItem(record) {
 
 export async function getQueue(req, res, next) {
     try {
-        const records = await getPatientRecords();
+        const facilityId = process.env.FACILITY_ID;
+
+        const records = await getPatientRecords(facilityId);
 
         const queue = records
             .map(mapFHIRRecordToQueueItem)
@@ -71,6 +73,7 @@ export async function getQueue(req, res, next) {
                     new Date(a.createdAt).getTime()
                 );
             });
+
 
         return res.status(200).json(queue);
     } catch (error) {

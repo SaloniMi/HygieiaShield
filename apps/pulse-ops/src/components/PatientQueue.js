@@ -36,6 +36,10 @@ export default function PatientQueue({
         (p) => p.status === 'PLANNED'
     );
 
+    const arrivedPatients = sortedPatients.filter(
+        (p) => p.status === 'ARRIVED'
+    );
+
     const admittedPatients = sortedPatients.filter(
         (p) => p.status === 'IN_CARE'
     );
@@ -166,6 +170,12 @@ export default function PatientQueue({
                     Incoming
                 </div>
                 {incomingPatients.map(renderPatient)}
+
+                {/* Incoming Section Head (.sidebar-section) */}
+                <div className="px-3.5 pb-1.5 pt-3 text-[10px] font-bold tracking-[0.5px] text-[#9a9994] uppercase">
+                    Triaged
+                </div>
+                {arrivedPatients.map(renderPatient)}
 
                 {/* Admitted Section Head (.sidebar-section with custom margin) */}
                 <div className="px-3.5 pb-1.5 pt-4 text-[10px] font-bold tracking-[0.5px] text-[#9a9994] uppercase">

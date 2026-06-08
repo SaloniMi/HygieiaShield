@@ -1,11 +1,16 @@
 import { GateKeeperInput } from "./schemas/input.schema.js";
-import { GateKeeperOutput, VitalFlag } from "./schemas/output.schema.js";
-import { VitalsType } from "@hygieiashield/zod-contracts";
+import { GateKeeperOutput } from "./schemas/output.schema.js";
+import {
+  AgentContext,
+  VitalFlag,
+  VitalsType
+} from "@hygieiashield/zod-contracts";
 import {
   evaluateAllVitals,
   VITAL_RULES,
   VITALS_LOINC
 } from "@hygieiashield/clinical-protocols";
+import { AgentEventLogger } from "../../realtime/agent-event.logger.js";
 
 /* =========================
    HIGH RISK OBSERVABLES
@@ -222,8 +227,11 @@ function shouldForceHighRisk(
 ========================= */
 
 export async function runGatekeeper(
-  input: GateKeeperInput
+  input: GateKeeperInput,
+  ctx: AgentContext
 ): Promise<GateKeeperOutput> {
+  const start = Date.now();
+
   const reasons: string[] = [];
 
   // ── Evaluate all vitals up front ──────────────────────────────────────────
@@ -236,6 +244,26 @@ export async function runGatekeeper(
   // Only populate vitalFlags when vitals were actually provided
   const vitalFlags = hasVitals ? buildVitalFlags(vitalResults) : [];
 
+  /* ─────────────────────────────────────────────────────────────
+     EVENT HELPER (single source of truth)
+  ───────────────────────────────────────────────────────────── */
+  const publishEvent = async (final: GateKeeperOutput) => {
+    const event = AgentEventLogger.gatekeeperCompleted({
+      trace: ctx.trace,
+      finalESI: final.finalESI,
+      previousESI: input.esiLevel,
+      input,
+      overridden: final.overridden,
+      vitalFlags,
+      reasons,
+      latencyMs: Date.now() - start
+    });
+
+    console.log(event);
+
+    await ctx.eventBus.publish(event);
+  };
+
   /* =========================
      STEP 1: ESI-1
   ========================= */
@@ -246,12 +274,15 @@ export async function runGatekeeper(
   }
 
   if (isLifeSavingNeeded) {
-    return {
+    const result: GateKeeperOutput = {
       finalESI: 1,
       overridden: input.esiLevel !== 1,
       reasons,
       vitalFlags
     };
+
+    await publishEvent(result);
+    return result;
   }
 
   /* =========================
@@ -266,12 +297,15 @@ export async function runGatekeeper(
   }
 
   if (isHighRisk) {
-    return {
+    const result: GateKeeperOutput = {
       finalESI: 2,
       overridden: input.esiLevel !== 2,
       reasons,
       vitalFlags
     };
+
+    await publishEvent(result);
+    return result;
   }
 
   /* =========================
@@ -285,18 +319,27 @@ export async function runGatekeeper(
       `High-risk vitals present: ${Array.from(context.highFlags).join(", ")}`
     );
 
-    return {
+    const result: GateKeeperOutput = {
       finalESI: 2,
       overridden: true,
       reasons,
       vitalFlags
     };
+
+    await publishEvent(result);
+    return result;
   }
 
-  return {
+  /* =========================
+     FINAL: No escalation
+  ========================= */
+  const result: GateKeeperOutput = {
     finalESI: input.esiLevel,
     overridden: false,
     reasons,
     vitalFlags
   };
+
+  await publishEvent(result);
+  return result;
 }

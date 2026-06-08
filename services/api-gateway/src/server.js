@@ -1,8 +1,10 @@
 import dotenv from 'dotenv';
 import app from './app.js';
 import { connectMongo } from "./db/mongo.js";
-import { ensureIndexes } from './db/repositories/fhir.repository.js';
+import { ensureIndexesInAgentTrace } from './db/repositories/agent-trace.repository.js';
+import { ensureIndexesInFHIR } from './db/repositories/fhir.repository.js';
 import dns from "node:dns";
+import { ensureIndexesInUsers } from './db/repositories/users.repository.js';
 
 dns.setServers([
     "1.1.1.1",
@@ -15,7 +17,9 @@ const PORT = process.env.PORT || 4000;
 
 async function bootstrap() {
     await connectMongo();
-    await ensureIndexes();
+    await ensureIndexesInFHIR();
+    await ensureIndexesInAgentTrace();
+    await ensureIndexesInUsers();
 
     const server = app.listen(PORT, () => {
         console.log(`API Gateway running on port ${PORT}`);

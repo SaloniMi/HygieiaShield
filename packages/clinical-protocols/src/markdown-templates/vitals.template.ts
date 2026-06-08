@@ -1,55 +1,77 @@
+import { VitalFlag } from "@hygieiashield/zod-contracts";
 import { VITALS_LOINC } from "../loinc/loinc-directory.js";
 
 type Vitals = Record<string, unknown>;
 
 export function formatVitalsForClinician(vitals: Vitals): string {
   const parts: string[] = [];
-  const directory = VITALS_LOINC;
 
-  const getUnit = (key: string) =>
-    directory[key as keyof typeof directory]?.unit ?? "";
+  for (const [key, value] of Object.entries(vitals)) {
+    if (value == null) continue;
 
-  // SpO2
-  if (vitals.spo2 != null) {
-    parts.push(`SpO₂ ${vitals.spo2}${getUnit("spo2")}`);
-  }
+    if (key === "diastolicBP") continue;
 
-  // Heart rate
-  if (vitals.heartRate != null) {
-    parts.push(`HR ${vitals.heartRate} ${getUnit("heartRate")}`);
-  }
+    if (key === "systolicBP") {
+      parts.push(
+        `BP ${vitals.systolicBP ?? "-"}/${vitals.diastolicBP ?? "-"} mmHg`
+      );
+      continue;
+    }
 
-  // Respiratory rate
-  if (vitals.respiratoryRate != null) {
-    parts.push(`RR ${vitals.respiratoryRate} ${getUnit("respiratoryRate")}`);
-  }
+    const config = VITALS_LOINC[key as keyof typeof VITALS_LOINC];
 
-  // Blood pressure (grouped)
-  if (vitals.systolicBP != null || vitals.diastolicBP != null) {
-    const sys = vitals.systolicBP ?? "-";
-    const dia = vitals.diastolicBP ?? "-";
-    parts.push(`BP ${sys}/${dia} mmHg`);
-  }
+    if (!config) continue;
 
-  // Temperature
-  if (vitals.temperatureC != null) {
-    parts.push(`Temp ${vitals.temperatureC}${getUnit("temperatureC")}`);
-  }
+    switch (config.inputType) {
+      case "boolean":
+        parts.push(`${config.display} ${value ? "Yes" : "No"}`);
+        break;
 
-  // Pain score
-  if (vitals.painScore != null) {
-    parts.push(`Pain ${vitals.painScore}/10`);
-  }
+      case "select":
+        parts.push(`${config.display}: ${value}`);
+        break;
 
-  // Oxygen support (boolean)
-  if (vitals.isSupplementalOxygen != null) {
-    parts.push(`O₂ support ${vitals.isSupplementalOxygen ? "Yes" : "No"}`);
-  }
-
-  // Consciousness
-  if (vitals.levelOfConsciousness != null) {
-    parts.push(`LOC ${vitals.levelOfConsciousness}`);
+      default:
+        parts.push(`${config.display} ${value}${config.unit ?? ""}`);
+    }
   }
 
   return parts.join(" · ");
+}
+
+function humanizeFlag(flag: string): string {
+  return flag
+    .toLowerCase()
+    .split("_")
+    .map((word, i) =>
+      i === 0 ? word.charAt(0).toUpperCase() + word.slice(1) : word
+    )
+    .join(" ");
+}
+
+export function formatVitalFlagForClinician(flag: VitalFlag): string {
+  const finding = humanizeFlag(flag.flag);
+
+  // Numeric vital
+  if (flag.threshold) {
+    if (flag.threshold) {
+      return `${flag.vitalLabel}: ${flag.value}${
+        flag.unit ? ` ${flag.unit}` : ""
+      } (${flag.threshold.operator}${flag.threshold.value}${
+        flag.unit ? ` ${flag.unit}` : ""
+      }) — ${finding}`;
+    }
+  }
+
+  // Boolean vital
+  if (typeof flag.value === "boolean") {
+    return `${flag.vitalLabel}: ${flag.value ? "Yes" : "No"}. ${finding}.`;
+  }
+
+  // Enum vital
+  return `${flag.vitalLabel}: ${flag.value}. ${finding}.`;
+}
+
+export function formatVitalFlagsForClinician(flags: VitalFlag[]): string[] {
+  return flags.map(formatVitalFlagForClinician);
 }

@@ -53,12 +53,14 @@ export const vitalsSchema = z.object({
     .number()
     .min(25, "Core temperature below 25°C indicates severe hypothermia")
     .max(45, "Core temperature above 45°C indicates fatal hyperpyrexia")
-    .describe("Core body temperature in Celsius"),
+    .describe("Core body temperature in Celsius")
+    .optional(),
 
   isSupplementalOxygen: z
     .boolean()
     .default(false)
-    .describe("Is the patient currently receiving oxygen support?"),
+    .describe("Is the patient currently receiving oxygen support?")
+    .optional(),
 
   //  AVPU Vitals
   levelOfConsciousness: z.enum(["ALERT", "VERBAL", "PAINFUL", "UNRESPONSIVE"]),

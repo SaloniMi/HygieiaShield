@@ -7,8 +7,9 @@ export function generateDoctorBriefAsync({
     observables,
     unknownMentions,
     esiLevel,
-    vitals
-}) {
+    vitals,
+    vitalFlags
+}, ctx) {
     setImmediate(async () => {
         try {
             console.time("doctor-brief")
@@ -18,8 +19,9 @@ export function generateDoctorBriefAsync({
                 observables,
                 unknownMentions,
                 esiLevel,
-                vitals
-            });
+                vitals,
+                vitalFlags
+            }, ctx);
             console.timeEnd("doctor-brief")
 
             await updateDoctorBrief(token, { ...doctorBrief, status: "READY" });

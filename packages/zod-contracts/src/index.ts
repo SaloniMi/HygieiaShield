@@ -6,3 +6,6 @@ export * from "./vitals.schema.js";
 export * from "./risk.schema.js";
 export * from "./doctor-brief.schema.js";
 export * from "./symptoms.schema.js";
+export * from "./vitals-flag.schema.js";
+export * from "./agent-event.schema.js";
+export * from "./agent-context.schema.js";

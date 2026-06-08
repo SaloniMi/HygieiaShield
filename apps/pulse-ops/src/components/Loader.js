@@ -2,9 +2,9 @@
 
 import React from 'react';
 
-export default function PulseTriageLoader({
-    title = "Finding the best help for you",
-    subtitle = "Analyzing your symptoms"
+export default function PulseOpsLoader({
+    title = "PulseOps",
+    subtitle = "Opening the clinical workstation..."
 }) {
     return (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/90">
@@ -45,5 +45,4 @@ export default function PulseTriageLoader({
         </div>
     );
 }
-
 

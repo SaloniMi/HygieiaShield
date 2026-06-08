@@ -3,8 +3,9 @@ import { createLLM } from "../../services/llm/llm.services.js";
 import { intakeOutputSchema, IntakeOutput } from "./schemas/output.schema.js";
 import { buildIntakeInterpreterPrompt } from "./intake.prompt.js";
 import { IntakeInput, intakeInputSchema } from "./schemas/input.schema.js";
-import { observableSchema } from "@hygieiashield/zod-contracts";
+import { AgentContext, observableSchema } from "@hygieiashield/zod-contracts";
 import { UserSymptom } from "@hygieiashield/zod-contracts";
+import { AgentEventLogger } from "../../realtime/agent-event.logger.js";
 
 const symptomFallbackMap = {
   STOMACH_PAIN: ["STABLE_ABDOMINAL_PAIN"],
@@ -53,7 +54,8 @@ export async function extractObservables(input: IntakeInput) {
 }
 
 export async function runIntakeInterpreter(
-  rawInput: unknown
+  rawInput: unknown,
+  ctx: AgentContext
 ): Promise<IntakeOutput> {
   const input = intakeInputSchema.parse(rawInput);
   const hasTranscript = input.transcript && input.transcript.trim().length > 0;
@@ -67,11 +69,26 @@ export async function runIntakeInterpreter(
     });
   }
 
+  const start = Date.now();
+
   // Extracts observables using LLM extraction technique
   const extracted = await extractObservables(input);
 
-  return intakeOutputSchema.parse({
+  const parsedOutput = intakeOutputSchema.parse({
     observables: extracted.observables ?? [],
     unknownMentions: extracted.unknownMentions
   });
+
+  const event = AgentEventLogger.intakeCompleted({
+    trace: ctx.trace,
+    observables: extracted.observables ?? [],
+    unknownMentions: extracted.unknownMentions,
+    rawText: input.transcript,
+    latencyMs: Date.now() - start
+  });
+  console.log(event);
+
+  await ctx.eventBus.publish(event);
+
+  return parsedOutput;
 }

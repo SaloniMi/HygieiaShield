@@ -1,39 +1,104 @@
 'use client';
 import { ESI_LEVELS } from '@/constants/esi-severity';
-import { formatVitalsForClinician } from "@hygieiashield/clinical-protocols"
+import { formatVitalFlagsForClinician, formatVitalsForClinician } from "@hygieiashield/clinical-protocols"
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 /**
  * ClinicalBriefTab
  * Displays pre-arrival observables, ESI level, risk flags, recommended actions,
  * protocol matches, SNOMED codes, agent confidence, and an input for clinical notes.
  */
-export default function ClinicalBriefTab({ patient }) {
-    const { brief = {} } = patient ?? {}
-    const briefStatus = brief.status ?? "READY";
+export default function ClinicalBriefTab({ patient, isActive }) {
+    const [brief, setBrief] = useState(null);
+
+    const intervalRef = useRef(null);
+    const mountedRef = useRef(false);
+    const cancelledRef = useRef(false);
+
+    const API_GATEWAY = process.env.NEXT_PUBLIC_API_GATEWAY_URL;
+
+    const fetchBrief = useCallback(async (id) => {
+        if (!id) return;
+
+        try {
+            const res = await fetch(
+                `${API_GATEWAY}/pulse-ops/patients/${id}/brief`
+            );
+
+            if (!res.ok) throw new Error("Failed brief fetch");
+
+            const data = await res.json();
+
+            if (cancelledRef.current) return;
+
+            setBrief(data?.brief ?? null);
+
+            return data?.brief;
+        } catch (err) {
+            console.error(err);
+
+            setBrief(prev => ({
+                ...(prev ?? {}),
+                status: "FAILED"
+            }));
+        }
+    }, [API_GATEWAY]);
+
+    useEffect(() => {
+        if (!isActive || !patient?.id) return;
+
+        // ✅ StrictMode guard (prevents double init in dev)
+        if (mountedRef.current) return;
+        mountedRef.current = true;
+
+        cancelledRef.current = false;
+
+        const start = async () => {
+            const brief = await fetchBrief(patient.id);
+
+            // stop polling if READY
+            if (brief?.status === "READY") return;
+
+            intervalRef.current = setInterval(() => {
+                fetchBrief(patient.id);
+            }, 60000);
+        };
+
+        start();
+
+        return () => {
+            cancelledRef.current = true;
+            mountedRef.current = false;
+
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current);
+                intervalRef.current = null;
+            }
+        };
+    }, [isActive, patient?.id, fetchBrief]);
+
+    const briefStatus = brief?.status ?? "READY";
+
+    if (!brief) return null;
+
+    if (briefStatus === "FAILED") {
+        return (
+            <div className="p-4">
+                <div className="bg-[#FCEBEB] border border-[#F7C1C1] rounded-[10px] px-3 py-2">
+                    <div className="text-xs font-semibold text-[#791F1F]">
+                        Clinical summary unavailable
+                    </div>
+                    <div className="text-[11px] text-[#791F1F]/80">
+                        Unable to generate the latest physician brief.
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="p-4 space-y-4">
             {/* Status Banner */}
-
-            {briefStatus === "STALE" && (
-                <div className="bg-[#FFF7E6] border border-[#F4D38A] rounded-[10px] px-3 py-2">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <div className="text-xs font-semibold text-[#8A5A00]">
-                                Clinical summary updating
-                            </div>
-
-                            <div className="text-[11px] text-[#8A5A00]/80">
-                                New vital signs have been recorded. Refreshing physician brief.
-                            </div>
-                        </div>
-
-                        <div className="animate-pulse text-[11px] text-[#8A5A00]">
-                            Updating...
-                        </div>
-                    </div>
-                </div>
-            )}
 
             {briefStatus === "PENDING" && (
                 <div className="bg-[#E6F1FB] border border-[#A7C8E8] rounded-[10px] px-3 py-2">
@@ -67,18 +132,6 @@ export default function ClinicalBriefTab({ patient }) {
                                 strokeWidth="4"
                             />
                         </svg>
-                    </div>
-                </div>
-            )}
-
-            {briefStatus === "FAILED" && (
-                <div className="bg-[#FCEBEB] border border-[#F7C1C1] rounded-[10px] px-3 py-2">
-                    <div className="text-xs font-semibold text-[#791F1F]">
-                        Clinical summary unavailable
-                    </div>
-
-                    <div className="text-[11px] text-[#791F1F]/80">
-                        Unable to generate the latest physician brief.
                     </div>
                 </div>
             )}
@@ -144,17 +197,37 @@ export default function ClinicalBriefTab({ patient }) {
                     </section>
 
                     {/* Agent 3 Risk Flags */}
-                    {brief.riskFlags && brief.riskFlags.length > 0 && (
+                    {patient?.vitalFlags && patient?.vitalFlags.length > 0 && (
                         <div className="bg-[#FCEBEB] border border-[#F7C1C1] rounded-[10px] p-2.5">
                             <div className="text-xs font-bold text-[#791F1F] mb-1 flex items-center gap-1.5">
                                 {/* Simple inline SVG replacement for ti-alert-triangle */}
                                 <svg className="w-3.5 h-3.5 text-[#E24B4A]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                 </svg>
-                                Risk flags
+                                Vital flags
                             </div>
                             <div className="text-xs text-[#A32D2D] leading-relaxed">
-                                {brief.riskFlags.map((flag, idx) => (
+                                {formatVitalFlagsForClinician(patient?.vitalFlags).map((flag, idx) => (
+                                    <div key={idx}>
+                                        • {flag}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Agent 4 Risk Flags */}
+                    {brief?.riskFlags && brief?.riskFlags.length > 0 && (
+                        <div className="bg-[#FCEBEB] border border-[#F7C1C1] rounded-[10px] p-2.5">
+                            <div className="text-xs font-bold text-[#791F1F] mb-1 flex items-center gap-1.5">
+                                {/* Simple inline SVG replacement for ti-alert-triangle */}
+                                <svg className="w-3.5 h-3.5 text-[#E24B4A]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                                Clinical observations
+                            </div>
+                            <div className="text-xs text-[#A32D2D] leading-relaxed">
+                                {brief?.riskFlags.map((flag, idx) => (
                                     <div key={idx}>
                                         • {flag}
                                     </div>
@@ -169,11 +242,11 @@ export default function ClinicalBriefTab({ patient }) {
                             Chief complaint
                         </div>
                         <div className="text-sm text-[#1a1a18] leading-relaxed">
-                            {brief.chiefComplaint}
+                            {brief?.chiefComplaint}
                         </div>
                     </div>
 
-                    {patient.vitals && patient.vitals.length > 0 && (
+                    {patient.vitals && (
                         < div className="border-l-[2.5px] border-[#378ADD] pl-2.5">
                             <div className="text-[11px] font-bold text-[#6b6a66] uppercase tracking-wide mb-0.5">
                                 Vitals
@@ -196,7 +269,7 @@ export default function ClinicalBriefTab({ patient }) {
                             Recommended actions
                         </div>
                         <div className="space-y-1.5">
-                            {brief.recommendedActions.map((rec, idx) => (
+                            {brief.recommendedActions?.map((rec, idx) => (
                                 <div key={idx} className="flex items-start gap-2 text-xs text-[#0F6E56] Atlantic leading-relaxed">
                                     <div className="w-4 h-4 rounded-full bg-[#9FE1CB] text-[#085041] text-[10px] font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
                                         {idx + 1}
@@ -208,13 +281,13 @@ export default function ClinicalBriefTab({ patient }) {
                     </div>
 
                     {/* Protocol match */}
-                    {brief.protocolMatch && (
+                    {brief?.protocolMatch && (
                         <div className="border-l-[2.5px] border-[#378ADD] pl-2.5">
                             <div className="text-[11px] font-bold text-[#6b6a66] uppercase tracking-wide mb-0.5">
                                 Protocol match
                             </div>
                             <div className="text-sm text-[#1a1a18] leading-relaxed">
-                                {brief.protocolMatch.name} — {brief.protocolMatch.rationale}
+                                {brief.protocolMatch?.name} — {brief.protocolMatch?.rationale}
                             </div>
                         </div>
                     )}
@@ -225,7 +298,7 @@ export default function ClinicalBriefTab({ patient }) {
                             Confidence
                         </div>
                         <div className="text-sm text-[#0F6E56] font-semibold leading-relaxed">
-                            {brief.confidence.level} — {brief.confidence.explanation ?? " All Agents are in agreement"}
+                            {brief.confidence?.level ?? "MEDIUM"} — {brief.confidence?.explanation ?? " All Agents are in agreement"}
                         </div>
                     </div>
                 </div>

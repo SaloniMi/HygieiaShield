@@ -19,6 +19,7 @@ export const ESILevelSchema = z.union([
 export const encounterSchema = z.object({
   token: z.string(),
   patientId: z.string(),
+  encounterId: z.string(),
   status: encounterStatusSchema,
   esiLevel: ESILevelSchema,
   facilityId: z.string().optional(),

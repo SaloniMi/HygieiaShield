@@ -4,6 +4,7 @@ export const VITALS_LOINC = {
     display: "SpO₂",
     unit: "%",
     inputType: "number",
+    required: true,
     ui: {
       placeholder: "e.g. 91",
       step: 1
@@ -14,6 +15,7 @@ export const VITALS_LOINC = {
     code: "8867-4",
     display: "Heart rate",
     unit: "bpm",
+    required: true,
     inputType: "number",
     ui: {
       placeholder: "e.g. 112",
@@ -25,6 +27,7 @@ export const VITALS_LOINC = {
     code: "9279-1",
     display: "Respiratory rate",
     unit: "breaths/min",
+    required: true,
     inputType: "number",
     ui: {
       placeholder: "e.g. 18",
@@ -33,6 +36,7 @@ export const VITALS_LOINC = {
   },
 
   systolicBP: {
+    required: true,
     code: "8480-6",
     display: "Systolic blood pressure",
     unit: "mmHg",
@@ -44,6 +48,7 @@ export const VITALS_LOINC = {
   },
 
   diastolicBP: {
+    required: true,
     code: "8462-4",
     display: "Diastolic blood pressure",
     unit: "mmHg",
@@ -55,6 +60,7 @@ export const VITALS_LOINC = {
   },
 
   temperatureC: {
+    required: false,
     code: "8310-5",
     display: "Body temperature",
     unit: "°C",
@@ -66,6 +72,7 @@ export const VITALS_LOINC = {
   },
 
   isSupplementalOxygen: {
+    required: false,
     code: null,
     unit: null,
     display: "Supplemental oxygen",
@@ -78,6 +85,7 @@ export const VITALS_LOINC = {
   levelOfConsciousness: {
     code: null,
     unit: null,
+    required: true,
     display: "Level of consciousness (AVPU)",
     inputType: "select",
     ui: {
@@ -88,6 +96,7 @@ export const VITALS_LOINC = {
   painScore: {
     code: null,
     unit: null,
+    required: false,
     display: "Pain score",
     inputType: "number",
     ui: {

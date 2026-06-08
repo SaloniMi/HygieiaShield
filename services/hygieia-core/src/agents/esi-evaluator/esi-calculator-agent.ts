@@ -2,11 +2,15 @@ import { createLLM } from "../../services/llm/llm.services.js";
 import { buildESILevelCalculatorPrompt } from "./esi.prompt.js";
 import { ESIInputSchema } from "./schemas/input.schema.js";
 import { ESIOutputSchema, ESIAnalysisSchema } from "./schemas/output.schema.js";
-import { buildESIResult } from "../../protocols/ESI/decision-maker/decision.maker.js";
+import { buildESIResult } from "@hygieiashield/clinical-protocols";
 import { retrieveESIContext } from "./context.grounder.js";
+import { AgentContext } from "@hygieiashield/zod-contracts";
+import { AgentEventLogger } from "../../realtime/agent-event.logger.js";
 
-export async function runESIEvaluator(rawInput: unknown) {
+export async function runESIEvaluator(rawInput: unknown, ctx: AgentContext) {
   const input = ESIInputSchema.parse(rawInput);
+  const start = Date.now();
+
   // const handbook = loadHandbook();
   // const systemPrompt = buildESILevelCalculatorPrompt(handbook);
 
@@ -32,5 +36,18 @@ export async function runESIEvaluator(rawInput: unknown) {
 
   // Step 2 - Build the ESI grounding retrieval result to calculate the final ESI level
   const ESIResults = buildESIResult(result);
-  return ESIOutputSchema.parse(ESIResults);
+  const parsedResults = ESIOutputSchema.parse(ESIResults);
+
+  const event = AgentEventLogger.esiClassified({
+    trace: ctx.trace,
+    observables: input.observables ?? [],
+    unknownMentions: input.unknownMentions ?? [],
+    ...parsedResults,
+    ageGroup: input.ageGroup,
+    latencyMs: Date.now() - start
+  });
+
+  await ctx.eventBus.publish(event);
+
+  return parsedResults;
 }

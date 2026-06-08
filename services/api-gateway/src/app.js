@@ -19,5 +19,4 @@ app.use('/location', locationRoutes);
 app.use('/pulse-triage', triageRoutes);
 app.use('/pulse-ops', pulseOpsRoutes);
 
-
 export default app;

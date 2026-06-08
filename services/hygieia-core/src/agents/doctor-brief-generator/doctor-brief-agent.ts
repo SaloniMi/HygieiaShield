@@ -5,16 +5,22 @@ import {
   doctorBriefOutputSchema
 } from "./schemas/output.schema.js";
 import { buildDoctorBriefPrompt } from "./doctor-brief.prompt.js";
+import { AgentEventLogger } from "../../realtime/agent-event.logger.js";
+import { AgentContext } from "@hygieiashield/zod-contracts";
 
 export async function generateDoctorBrief(
-  rawInput: unknown
+  rawInput: unknown,
+  ctx: AgentContext
 ): Promise<DoctorBriefOutput> {
+  const start = Date.now();
+
   const input = doctorBriefInputSchema.parse(rawInput);
 
   const llm = createLLM();
+  console.log(buildDoctorBriefPrompt(input.vitalFlags));
 
   const result = await llm.generateStructuredOutput({
-    systemPrompt: buildDoctorBriefPrompt(),
+    systemPrompt: buildDoctorBriefPrompt(input.vitalFlags),
     userPrompt: {
       ageGroup: input.ageGroup,
       esiLevel: input.esiLevel,
@@ -26,5 +32,16 @@ export async function generateDoctorBrief(
     model: "medgemma:4b"
   });
 
-  return doctorBriefOutputSchema.parse(result);
+  const parsedResult = doctorBriefOutputSchema.parse(result);
+  const event = AgentEventLogger.doctorBriefGenerated({
+    trace: ctx.trace,
+    input,
+    unknownMentions: input.unknownMentions ?? [],
+    ...parsedResult,
+    latencyMs: Date.now() - start
+  });
+
+  await ctx.eventBus.publish(event);
+
+  return parsedResult;
 }

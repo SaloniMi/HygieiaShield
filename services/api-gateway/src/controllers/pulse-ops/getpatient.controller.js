@@ -1,5 +1,6 @@
 import { findByPatientId } from "../../db/repositories/fhir.repository.js";
 import { getExtensionValue } from "./utils.js";
+import { VITALS_LOINC } from "@hygieiashield/clinical-protocols";
 
 function extractObservables(conditions = []) {
     return conditions
@@ -20,6 +21,66 @@ function extractPatientNotes(encounter = {}) {
         .filter(Boolean);
 }
 
+const LOINC_TO_VITAL = Object.fromEntries(
+    Object.entries(VITALS_LOINC)
+        .filter(([, config]) => config.code)
+        .map(([key, config]) => [config.code, key])
+);
+
+function extractVitals(observations = []) {
+    const vitals = {};
+
+    for (const observation of observations) {
+        const loincCode = observation.code?.coding?.[0]?.code;
+
+        // Blood pressure panel
+        if (loincCode === "85354-9") {
+            for (const component of observation.component ?? []) {
+                const componentCode =
+                    component.code?.coding?.[0]?.code;
+
+                const vitalKey = LOINC_TO_VITAL[componentCode];
+
+                if (vitalKey) {
+                    vitals[vitalKey] =
+                        component.valueQuantity?.value;
+                }
+            }
+
+            continue;
+        }
+
+        // Standard LOINC vitals
+        const vitalKey = LOINC_TO_VITAL[loincCode];
+
+        if (vitalKey) {
+            vitals[vitalKey] =
+                observation.valueQuantity?.value;
+            continue;
+        }
+
+        // Non-LOINC custom vitals
+        switch (observation.code?.text) {
+            case VITALS_LOINC.isSupplementalOxygen.display:
+                vitals.isSupplementalOxygen =
+                    observation.valueBoolean;
+                break;
+
+            case VITALS_LOINC.levelOfConsciousness.display:
+                vitals.levelOfConsciousness =
+                    observation.valueString;
+                break;
+
+            case VITALS_LOINC.painScore.display:
+                vitals.painScore =
+                    observation.valueInteger;
+                break;
+        }
+    }
+
+    return vitals;
+}
+
 export async function getPatient(req, res, next) {
     try {
         const { patientId } = req.params;
@@ -35,6 +96,9 @@ export async function getPatient(req, res, next) {
         const patient = record.patient ?? {};
         const encounter = record.encounter ?? {};
         const conditions = record.conditions ?? [];
+
+        const observations = record.observations ?? [];
+        const vitals = extractVitals(observations);
 
         const observables = extractObservables(conditions);
         const patientNotes = extractPatientNotes(encounter);
@@ -69,10 +133,8 @@ export async function getPatient(req, res, next) {
 
             patientNotes,
 
-            vitals: record.vitals ?? [],
-
-            brief: record.derived?.doctorBrief ?? null,
-
+            vitals: vitals ?? {},
+            vitalFlags: record.derived?.clinicalAssessment?.vitalFlags ?? [],
             createdAt: record.createdAt,
             updatedAt: record.updatedAt
         };
