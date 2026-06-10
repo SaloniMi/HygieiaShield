@@ -1,21 +1,50 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { ESI_LEVELS } from '@/constants/esi-severity';
 import ClinicalBriefTab from './ClinicalBriefTab';
 import VitalsEntryTab from './VitalsEntryTab';
 import AgentTraceTab from './AgentTraceTab';
 import { getAgeGroupDisplay } from '@hygieiashield/clinical-protocols';
+import DashboardFooter from './DashboardFooter';
+import {
+    VITALS_LOINC,
+    formatVitalFlagsForClinician
+} from '@hygieiashield/clinical-protocols';
 
+
+const INITIAL_VITALS = Object.entries(VITALS_LOINC).reduce(
+    (acc, [key, cfg]) => {
+        switch (cfg.inputType) {
+            case 'number':
+                acc[key] = '';
+                break;
+            case 'boolean':
+                acc[key] = false;
+                break;
+            default:
+                acc[key] = '';
+        }
+
+        return acc;
+    },
+    {}
+);
 export default function PatientBrief({ patientId, isLoading }) {
     const [patient, setPatient] = useState(null);
     const [activeTab, setActiveTab] = useState('clinical-brief');
-    const [isAcknowledged, setIsAcknowledged] = useState(false);
+    const [isAcknowledged, setIsAcknowledged] = useState(patient?.status === "ACKNOWLEDGED");
+    const [vitals, setVitals] = useState(INITIAL_VITALS);
+    const [vitalsLocked, setVitalsLocked] = useState(false);
+    const [gatekeeperData, setGatekeeperData] = useState(null);
+    const [isRunningGatekeeper, setIsRunningGatekeeper] = useState(false);
 
     const intervalRef = useRef(null);
     const cancelledRef = useRef(false);
+    const hydratedPatientRef = useRef(null);
 
     const API_GATEWAY = process.env.NEXT_PUBLIC_API_GATEWAY_URL;
+
 
     // -------------------------
     // FETCH PATIENT (single source)
@@ -44,6 +73,167 @@ export default function PatientBrief({ patientId, isLoading }) {
     }, [API_GATEWAY, patientId]);
 
     // -------------------------
+    // EVENT-DRIVEN REFRESH (exposed to children)
+    // -------------------------
+    const handlePatientUpdate = useCallback(() => {
+        fetchPatient();
+    }, [fetchPatient]);
+
+    useEffect(() => {
+        if (!patient) return;
+
+        if (hydratedPatientRef.current === patient.id) {
+            return;
+        }
+
+        hydratedPatientRef.current = patient.id;
+
+        const locked =
+            !!patient?.vitals &&
+            Object.values(patient.vitals).some(
+                (value) =>
+                    value !== null &&
+                    value !== undefined &&
+                    value !== ''
+            );
+
+        setVitalsLocked(locked);
+
+        setVitals({
+            ...INITIAL_VITALS,
+            ...(patient?.vitals ?? {})
+        });
+
+        if (locked && patient?.vitalFlags) {
+            setGatekeeperData({
+                success: true,
+                flags: formatVitalFlagsForClinician(
+                    patient.vitalFlags
+                )
+            });
+        }
+    }, [patient]);
+
+
+    const handleVitalsChange = useCallback((key, value) => {
+        const config = VITALS_LOINC[key];
+
+        let normalizedValue = value;
+
+        if (config?.inputType === 'number') {
+            normalizedValue =
+                value === ''
+                    ? ''
+                    : Number(value);
+        }
+
+        setVitals((prev) => ({
+            ...prev,
+            [key]: normalizedValue
+        }));
+    }, []);
+
+    const cleanVitals = useMemo(() => {
+        return Object.entries(vitals).reduce(
+            (acc, [key, value]) => {
+                if (
+                    value === '' ||
+                    value === null ||
+                    value === undefined
+                ) {
+                    return acc;
+                }
+
+                const cfg = VITALS_LOINC[key];
+
+                if (cfg?.inputType === 'number') {
+                    const num = Number(value);
+
+                    if (!Number.isNaN(num)) {
+                        acc[key] = num;
+                    }
+
+                    return acc;
+                }
+
+                acc[key] = value;
+
+                return acc;
+            },
+            {}
+        );
+
+    }, [vitals]);
+
+    const handleRunGatekeeper = useCallback(async () => {
+        if (!patient) return;
+
+        try {
+            setIsRunningGatekeeper(true);
+
+            const response = await fetch(
+                `${API_GATEWAY}/pulse-ops/vitals`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        input: {
+                            patient,
+                            vitals: cleanVitals
+                        },
+                        trace: {
+                            patientId: patient.id,
+                            encounterId: patient.encounterId,
+                            token: patient.token
+                        }
+                    })
+                }
+            );
+
+            if (response.ok) {
+                const result = await response.json();
+
+                const vitalFlags =
+                    result?.data?.vitalFlags ?? [];
+
+                setGatekeeperData({
+                    success: true,
+                    flags: formatVitalFlagsForClinician(
+                        vitalFlags
+                    )
+                });
+
+                setVitalsLocked(true);
+
+                handlePatientUpdate();
+            } else {
+                const error = await response.json();
+
+                setGatekeeperData({
+                    success: false,
+                    error:
+                        error.message ??
+                        'Failed computation of vitals'
+                });
+            }
+        } catch (error) {
+            setGatekeeperData({
+                success: false,
+                error: error.message
+            });
+        } finally {
+            setIsRunningGatekeeper(false);
+        }
+    }, [
+        patient,
+        cleanVitals,
+        API_GATEWAY,
+        handlePatientUpdate
+    ]);
+
+    // -------------------------
     // LIFECYCLE + POLLING (3 min)
     // -------------------------
     useEffect(() => {
@@ -69,13 +259,6 @@ export default function PatientBrief({ patientId, isLoading }) {
     }, [patientId, fetchPatient]);
 
     // -------------------------
-    // EVENT-DRIVEN REFRESH (exposed to children)
-    // -------------------------
-    const handlePatientUpdate = useCallback(() => {
-        fetchPatient();
-    }, [fetchPatient]);
-
-    // -------------------------
     // ACKNOWLEDGE (now owned here)
     // -------------------------
     const handleAcknowledge = async () => {
@@ -83,7 +266,7 @@ export default function PatientBrief({ patientId, isLoading }) {
 
         try {
             await fetch(
-                `/api/pulseops/patients/${patientId}/acknowledge`,
+                `${API_GATEWAY}/pulse-ops/patients/${patientId}/acknowledge`,
                 { method: 'POST' }
             );
 
@@ -142,10 +325,11 @@ export default function PatientBrief({ patientId, isLoading }) {
                             <span className="ml-1 text-[11px] font-semibold px-[9px] py-[3px] rounded-full bg-[#B5D4F4] text-[#042C53]">
                                 {patient.status}
                             </span>
-                        </div>
-
-                        <div className="text-[11px] text-[#B5D4F4]">
-                            Soft reservation active
+                            {patient.wardType && (
+                                <span className="ml-1 text-[11px] font-semibold px-[9px] py-[3px] rounded-full bg-[#B5D4F4] text-[#042C53]">
+                                    {patient.wardType}
+                                </span>
+                            )}
                         </div>
                     </div>
 
@@ -179,8 +363,12 @@ export default function PatientBrief({ patientId, isLoading }) {
 
                     {activeTab === 'vitals-entry' && (
                         <VitalsEntryTab
-                            patient={patient}
-                            onPatientUpdate={handlePatientUpdate}
+                            vitals={vitals}
+                            vitalsLocked={vitalsLocked}
+                            gatekeeperData={gatekeeperData}
+                            isRunningGatekeeper={isRunningGatekeeper}
+                            onVitalsChange={handleVitalsChange}
+                            onRunGatekeeper={handleRunGatekeeper}
                         />
                     )}
 
@@ -190,28 +378,7 @@ export default function PatientBrief({ patientId, isLoading }) {
                 </div>
 
                 {/* FOOTER */}
-                <div className="px-[16px] py-[12px] border-t border-black/10 flex items-center bg-white">
-
-                    <button
-                        onClick={handleAcknowledge}
-                        disabled={isAcknowledged}
-                        className={`px-[16px] py-[8px] border rounded-[10px] text-[12px] font-semibold text-white ${isAcknowledged
-                            ? 'bg-[#085041] border-[#085041] opacity-90'
-                            : 'bg-[#0F6E56] border-[#0F6E56] hover:bg-[#085041]'
-                            }`}
-                    >
-                        {isAcknowledged ? 'Acknowledged ✓' : 'Acknowledge & proceed'}
-                    </button>
-                    <div className="ml-auto flex items-center gap-[5px] text-[11px] text-[#0F6E56] font-semibold">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="w-[14px] h-[14px]" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round">
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                            <path d="M12 3a12 12 0 0 0 8.5 3a12 12 0 0 1 -8.5 15a12 12 0 0 1 -8.5 -15a12 12 0 0 0 8.5 -3"></path>
-                            <path d="M12 11m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path>
-                            <path d="M12 12l0 2.5"></path>
-                        </svg>
-                        HygieiaCore verified
-                    </div>
-                </div>
+                <DashboardFooter onAcknowledge={handleAcknowledge} isDisabled={patient?.status !== "ARRIVED"} isAcknowledged={isAcknowledged} />
             </div>
         </div>
     );

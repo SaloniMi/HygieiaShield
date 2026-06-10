@@ -259,8 +259,6 @@ export async function runGatekeeper(
       latencyMs: Date.now() - start
     });
 
-    console.log(event);
-
     await ctx.eventBus.publish(event);
   };
 

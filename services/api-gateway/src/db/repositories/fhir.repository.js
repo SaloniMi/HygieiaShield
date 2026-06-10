@@ -87,7 +87,9 @@ export async function updateEncounter(
     token,
     {
         status,
-        esiLevel
+        esiLevel,
+        destinationCareType,
+        wardType
     }
 ) {
     const db = await connectMongo();
@@ -96,23 +98,41 @@ export async function updateEncounter(
         updatedAt: new Date().toISOString()
     };
 
+    const arrayFilters = [];
+
     if (status) {
         update["encounter.status"] = status;
     }
 
     if (esiLevel !== undefined) {
         update["encounter.extension.$[esi].valueString"] = String(esiLevel);
+
+        arrayFilters.push({
+            "esi.url": "https://hygieia.dev/esi-level"
+        });
+    }
+
+    if (destinationCareType !== undefined) {
+        update["encounter.extension.$[dest].valueString"] = String(destinationCareType);
+
+        arrayFilters.push({
+            "dest.url": "https://hygieia.dev/destination-care-type"
+        });
+    }
+
+    if (wardType !== undefined) {
+        update["encounter.extension.$[ward].valueString"] = String(destinationCareType);
+
+        arrayFilters.push({
+            "ward.url": "https://hygieia.dev/recommended-ward-type"
+        });
     }
 
     return db.collection(COLLECTION).updateOne(
         { token },
         { $set: update },
         {
-            arrayFilters: [
-                {
-                    "esi.url": "https://hygieia.dev/esi-level"
-                }
-            ]
+            arrayFilters
         }
     );
 }
@@ -215,4 +235,100 @@ export async function appendVitals(token, observations) {
             }
         }
     );
+}
+
+export async function getActiveEncounters(facilityId) {
+    const db = await connectMongo();
+
+    return db
+        .collection("fhirRecords")
+        .aggregate([
+            {
+                $match: {
+                    "encounter.status": {
+                        $in: ["ACKNOWLEDGED"]
+                    }
+                }
+            },
+            {
+                $match: {
+                    "encounter.extension": {
+                        $elemMatch: {
+                            url: "https://hygieia.dev/facility-id",
+                            valueString: facilityId
+                        }
+                    }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    encounterId: "$encounter.id",
+                    token: 1,
+                    patientId: "$patient.id",
+                    patientName: {
+                        $ifNull: [
+                            {
+                                $arrayElemAt: [
+                                    "$patient.name.text",
+                                    0
+                                ]
+                            },
+                            null
+                        ]
+                    },
+                    encounterStatus: "$encounter.status",
+                    careType: {
+                        $let: {
+                            vars: {
+                                careType: {
+                                    $first: {
+                                        $filter: {
+                                            input: "$encounter.extension",
+                                            as: "ext",
+                                            cond: {
+                                                $eq: [
+                                                    "$$ext.url",
+                                                    "https://hygieia.dev/destination-care-type"
+                                                ]
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            in: "$$careType.valueString"
+                        }
+                    },
+                    esiLevel: {
+                        $let: {
+                            vars: {
+                                esi: {
+                                    $first: {
+                                        $filter: {
+                                            input:
+                                                "$encounter.extension",
+                                            as: "ext",
+                                            cond: {
+                                                $eq: [
+                                                    "$$ext.url",
+                                                    "https://hygieia.dev/esi-level"
+                                                ]
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            in: "$$esi.valueString"
+                        }
+                    },
+                    updatedAt: 1
+                }
+            },
+            {
+                $sort: {
+                    updatedAt: -1
+                }
+            }
+        ])
+        .toArray();
 }

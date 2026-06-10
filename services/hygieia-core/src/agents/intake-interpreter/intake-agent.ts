@@ -4,27 +4,7 @@ import { intakeOutputSchema, IntakeOutput } from "./schemas/output.schema.js";
 import { buildIntakeInterpreterPrompt } from "./intake.prompt.js";
 import { IntakeInput, intakeInputSchema } from "./schemas/input.schema.js";
 import { AgentContext, observableSchema } from "@hygieiashield/zod-contracts";
-import { UserSymptom } from "@hygieiashield/zod-contracts";
 import { AgentEventLogger } from "../../realtime/agent-event.logger.js";
-
-const symptomFallbackMap = {
-  STOMACH_PAIN: ["STABLE_ABDOMINAL_PAIN"],
-  CHEST_PAIN: ["STABLE_CHEST_PAIN"],
-  BREATHING_TROUBLE: ["SEVERE_RESPIRATORY_DISTRESS"],
-  ALTERED_CONSCIOUSNESS: ["UNRESPONSIVE_OR_OBTUNDED"],
-  STROKE_SIGNS: ["ACUTE_STROKE_SYMPTOMS"],
-  SEVERE_HEADACHE: ["THUNDERCLAP_HEADACHE"],
-  ALLERGIC_REACTION: ["MILD_RASH_NO_DISTRESS"],
-  TRAUMA_INJURY: ["MINOR_ORTHOPEDIC_INJURY"],
-  FEVER_INFECTION: ["STABLE_PRODUCTIVE_COUGH"],
-  CRISIS_AND_SAFETY: ["SEVERE_PSYCHOLOGICAL_DISTRESS"]
-};
-
-function fallbackSymptomsToObservables(symptoms: UserSymptom[]): string[] {
-  return [
-    ...new Set(symptoms.flatMap((symptom) => symptomFallbackMap[symptom] ?? []))
-  ];
-}
 
 export async function extractObservables(input: IntakeInput) {
   // TODO: Azure OpenAI structured output
@@ -58,16 +38,6 @@ export async function runIntakeInterpreter(
   ctx: AgentContext
 ): Promise<IntakeOutput> {
   const input = intakeInputSchema.parse(rawInput);
-  const hasTranscript = input.transcript && input.transcript.trim().length > 0;
-
-  // Fast path: tap inputs only
-  if (!hasTranscript) {
-    return intakeOutputSchema.parse({
-      observables: fallbackSymptomsToObservables(input.selectedSymptoms),
-      confidence: 1,
-      unknownMentions: []
-    });
-  }
 
   const start = Date.now();
 
@@ -79,14 +49,14 @@ export async function runIntakeInterpreter(
     unknownMentions: extracted.unknownMentions
   });
 
+  // TODO: Change the agent trace
   const event = AgentEventLogger.intakeCompleted({
     trace: ctx.trace,
     observables: extracted.observables ?? [],
     unknownMentions: extracted.unknownMentions,
-    rawText: input.transcript,
+    input,
     latencyMs: Date.now() - start
   });
-  console.log(event);
 
   await ctx.eventBus.publish(event);
 

@@ -8,12 +8,12 @@ import type {
   AgentContext,
   VitalsType
 } from "@hygieiashield/zod-contracts";
-import { runRouteWorkflow } from "./routing.workflow.js";
 import { decideStatusBasedOnESILevel } from "@hygieiashield/clinical-protocols";
 import {
   buildFHIRBundleForPatient,
   createIdentity
 } from "../fhir/bundle.builder.js";
+import { determineCareRouteForPreArrival } from "../care-route-engine/pre-arrival-route/route-decider.js";
 
 export async function runTriageWorkflow(
   input: {
@@ -57,10 +57,16 @@ export async function runTriageWorkflow(
 
   const statusInfo = decideStatusBasedOnESILevel(gatekeeperResult.finalESI);
 
-  const routingResult = await runRouteWorkflow({
-    esiLevel: gatekeeperResult?.finalESI,
-    userCoordinates: input?.geoLocation
-  });
+  // Pre-arrival, route workflow -
+  // 1. Find care type
+  // 2. Find best hospital
+  const routingResult = await determineCareRouteForPreArrival(
+    {
+      esiLevel: gatekeeperResult?.finalESI,
+      userCoordinates: input?.geoLocation
+    },
+    ctx
+  );
 
   const builderResult = buildFHIRBundleForPatient({
     identity: identityInfo,
@@ -68,6 +74,7 @@ export async function runTriageWorkflow(
     ageGroup: input.ageGroup,
     observables: intake.observables,
     esiLevel: gatekeeperResult.finalESI,
+    careType: routingResult?.careType,
     facilityId: routingResult?.recommendedFacility?.facility_id
   });
 

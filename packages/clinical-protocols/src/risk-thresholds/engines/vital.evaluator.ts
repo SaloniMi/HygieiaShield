@@ -33,6 +33,12 @@ type BooleanVitalRule = {
   };
 };
 
+const severityRank = {
+  NORMAL: 0,
+  HIGH: 1,
+  CRITICAL: 2
+} as const;
+
 export function evaluateVital(value: string, rule: VitalRule) {
   if (!rule) return null;
 
@@ -42,6 +48,8 @@ export function evaluateVital(value: string, rule: VitalRule) {
   if (rule.type === "numeric") {
     const v = Number(value);
     if (Number.isNaN(v)) return null;
+
+    let bestMatch: (typeof rule.thresholds)[number] | null = null;
 
     for (const t of rule.thresholds) {
       let triggered = false;
@@ -64,10 +72,17 @@ export function evaluateVital(value: string, rule: VitalRule) {
           break;
       }
 
-      if (triggered) return { value: v, triggered: t };
+      if (!triggered) continue;
+
+      if (!bestMatch || severityRank[t.level] > severityRank[bestMatch.level]) {
+        bestMatch = t;
+      }
     }
 
-    return { value: v, triggered: null };
+    return {
+      value: v,
+      triggered: bestMatch
+    };
   }
 
   // -------------------------

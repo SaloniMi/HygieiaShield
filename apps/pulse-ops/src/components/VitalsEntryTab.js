@@ -90,49 +90,14 @@ function VitalCard({
 /**
  * Main Component
  */
-export default function VitalsEntryTab({ patient, onPatientUpdate }) {
-    const [vitalsLocked, setVitalsLocked] = useState(
-        !!patient?.vitals &&
-        Object.values(patient.vitals).some(
-            value =>
-                value !== null &&
-                value !== undefined &&
-                value !== ''
-        )
-    );
-
-    const initialVitals = Object.entries(VITALS_LOINC).reduce(
-        (acc, [key, cfg]) => {
-            switch (cfg.inputType) {
-                case 'number':
-                    acc[key] = '';
-                    break;
-
-                case 'boolean':
-                    acc[key] = false;
-                    break;
-
-                default:
-                    acc[key] = '';
-            }
-
-            return acc;
-        },
-        {}
-    );
-    const [vitals, setVitals] = useState({
-        ...initialVitals,
-        ...(patient?.vitals ?? {})
-    });
-    const [gatekeeperData, setGatekeeperData] = useState(
-        vitalsLocked && patient?.vitalFlags
-            ? {
-                success: true,
-                flags: formatVitalFlagsForClinician(patient.vitalFlags)
-            }
-            : null
-    ); const [isRunningGatekeeper, setIsRunningGatekeeper] = useState(false);
-
+export default function VitalsEntryTab({
+    vitals,
+    vitalsLocked,
+    gatekeeperData,
+    isRunningGatekeeper,
+    onVitalsChange,
+    onRunGatekeeper
+}) {
     const renderGatekeeperOutput = () => {
         if (isRunningGatekeeper) {
             return (
@@ -224,88 +189,6 @@ export default function VitalsEntryTab({ patient, onPatientUpdate }) {
         );
     });
 
-    const handleChange = (key, value) => {
-
-        const config = VITALS_LOINC[key];
-
-        let normalizedValue = value;
-
-        if (config?.inputType === 'number') {
-            normalizedValue =
-                value === ''
-                    ? ''
-                    : Number(value);
-        }
-
-        setVitals(prev => ({
-            ...prev,
-            [key]: normalizedValue
-        }));
-    };
-
-    const cleanVitals = Object.entries(vitals).reduce(
-        (acc, [key, value]) => {
-            if (value === "" || value === null || value === undefined) {
-                return acc;
-            }
-
-            const cfg = VITALS_LOINC[key];
-
-            if (cfg?.inputType === "number") {
-                const num = Number(value);
-                if (!Number.isNaN(num)) {
-                    acc[key] = num;
-                }
-                return acc;
-            }
-
-            acc[key] = value;
-            return acc;
-        },
-        {}
-    );
-
-    const handleRunGatekeeper = async () => {
-
-        try {
-            setIsRunningGatekeeper(true);
-            const API_GATEWAY = process.env.NEXT_PUBLIC_API_GATEWAY_URL;
-            const response = await fetch(`${API_GATEWAY}/pulse-ops/vitals`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    input: {
-                        patient,
-                        vitals: cleanVitals
-                    },
-                    trace: {
-                        patientId: patient.id,
-                        encounterId: patient.encounterId,
-                        token: patient.token
-                    }
-                })
-            });
-            if (response.ok) {
-                const result = await response.json();
-                const vitalFlags = result?.data?.vitalFlags ?? [];
-                const flagsArray = formatVitalFlagsForClinician(vitalFlags)
-                setGatekeeperData({ success: true, flags: flagsArray });
-                setVitalsLocked(true);
-                // notify parent (this is the important part)
-                onPatientUpdate?.();
-            } else {
-                const error = await response.json();
-                setGatekeeperData({ success: false, error: error.message ?? 'Failed computation of vitals, please re-check your vitals, or try again.' });
-            }
-        } catch (error) {
-            setGatekeeperData({ success: false, error: error.message });
-        } finally {
-            setIsRunningGatekeeper(false);
-        }
-    };
-
     return (
         <div className="p-4 space-y-4">
             {vitalsLocked && (
@@ -337,7 +220,7 @@ export default function VitalsEntryTab({ patient, onPatientUpdate }) {
                                 key={key}
                                 label={`${cfg.display}${cfg.unit ? ` (${cfg.unit})` : ""}`}
                                 value={vitals[key]}
-                                onChange={(val) => handleChange(key, val)}
+                                onChange={(val) => onVitalsChange(key, val)}
                                 placeholder={cfg.ui?.placeholder}
                                 loinc={cfg.code}
                                 inputType={cfg.inputType}
@@ -349,7 +232,7 @@ export default function VitalsEntryTab({ patient, onPatientUpdate }) {
 
                     </div>
                     <button
-                        onClick={handleRunGatekeeper}
+                        onClick={onRunGatekeeper}
                         disabled={
                             vitalsLocked ||
                             !requiredVitalsFilled ||

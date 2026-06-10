@@ -125,6 +125,11 @@ export async function getPatient(req, res, next) {
                 )
             ),
 
+            facilityId: getExtensionValue(
+                encounter.extension,
+                "https://hygieia.dev/facility-id"
+            ),
+
             status: encounter.status,
 
             encounterId: encounter.id,
@@ -132,6 +137,16 @@ export async function getPatient(req, res, next) {
             observables,
 
             patientNotes,
+
+            careType: getExtensionValue(
+                encounter.extension,
+                "https://hygieia.dev/destination-care-type"
+            ),
+
+            wardType: getExtensionValue(
+                encounter.extension,
+                "https://hygieia.dev/recommended-ward-type"
+            ),
 
             vitals: vitals ?? {},
             vitalFlags: record.derived?.clinicalAssessment?.vitalFlags ?? [],

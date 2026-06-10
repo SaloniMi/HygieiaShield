@@ -28,6 +28,7 @@ export function buildFHIRBundleForPatient(input: {
   observables: ObservablesType;
   unknownMentions?: string[];
   esiLevel: ESILevelType;
+  careType: string;
   facilityId?: string;
 }) {
   const { token, patientId, encounterId } = input.identity;
@@ -47,6 +48,7 @@ export function buildFHIRBundleForPatient(input: {
     patientId: patientId,
     esiLevel: input.esiLevel,
     status: "PLANNED",
+    careType: input.careType,
     facilityId: input.facilityId ?? "",
     unknownMentions: input.unknownMentions ?? []
   });

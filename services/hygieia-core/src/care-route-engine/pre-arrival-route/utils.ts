@@ -1,10 +1,8 @@
-import {
-  FacilityRow,
-  UserCoordinates
-} from "../services/hospital-capacity-retriever/retriever.interface.js";
+import { Facility } from "@hygieiashield/zod-contracts";
+import { CareType } from "../mapper.js";
 
 export async function getRouteMetrics(
-  from: UserCoordinates,
+  from: { latitude: number; longitude: number },
   to: { latitude: number; longitude: number }
 ) {
   const url =
@@ -49,30 +47,32 @@ function getTrafficMultiplier(baseDistanceMeters: number) {
   return timeFactor * distanceFactor;
 }
 
-export function computeQueueTimeMinutes(facility: FacilityRow) {
-  const BASE_WAIT = 45;
-  const s = facility.surge_index;
+export function computeQueueTimeMinutes(
+  facility: Facility,
+  careType: CareType
+) {
+  const unit =
+    careType === "ER"
+      ? facility.emergency
+      : careType === "UrgentCare"
+        ? facility.urgentCare
+        : facility.outpatient;
 
-  if (s < 0.7) {
-    return s * 0.3 * BASE_WAIT; // smooth region
-  }
+  const minutesPerPatient =
+    careType === "ER" ? 5 : careType === "UrgentCare" ? 3 : 1;
 
-  if (s < 1.0) {
-    return Math.pow(s, 2.5) * BASE_WAIT; // congestion curve
-  }
-
-  return BASE_WAIT * Math.exp(3 * (s - 1)); // overload spike
+  return unit.pending * minutesPerPatient;
 }
 
-export function computeFacilityScore(params: {
-  distanceMeters: number;
-  surgeIndex: number;
-}) {
-  const distanceKm = params.distanceMeters / 1000;
+export function computeSurgeIndex(facility: Facility, careType: CareType) {
+  const unit =
+    careType === "ER"
+      ? facility.emergency
+      : careType === "UrgentCare"
+        ? facility.urgentCare
+        : facility.outpatient;
 
-  // Normalize:
-  const distanceScore = distanceKm; // linear penalty
-  const surgeScore = params.surgeIndex * 10; // amplify load impact
+  const totalDemand = unit.occupied + unit.pending;
 
-  return distanceScore + surgeScore;
+  return (totalDemand / unit.capacity) * 100;
 }

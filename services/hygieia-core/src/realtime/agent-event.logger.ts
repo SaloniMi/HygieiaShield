@@ -9,11 +9,9 @@
 import { randomUUID } from "crypto";
 import { VitalFlag, AgentEvent, BaseTrace } from "@hygieiashield/zod-contracts";
 import { GateKeeperInput } from "../agents/deterministic-gatekeeper/schemas/input.schema.js";
-import {
-  formatVitalFlagsForClinician,
-  formatVitalsForClinician
-} from "@hygieiashield/clinical-protocols";
+import { formatVitalsForClinician } from "@hygieiashield/clinical-protocols";
 import { DoctorBriefInput } from "../agents/doctor-brief-generator/schemas/input.schema.js";
+import { IntakeInput } from "../agents/intake-interpreter/schemas/input.schema.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Shared helpers
@@ -40,10 +38,22 @@ function intakeCompleted(params: {
   observables: string[];
   unknownMentions: string[];
   latencyMs: number;
-  rawText?: string;
+  input?: IntakeInput;
   model?: string;
 }): AgentEvent {
-  const { trace, observables, unknownMentions, latencyMs, model } = params;
+  const { trace, observables, unknownMentions, latencyMs, model, input } =
+    params;
+
+  const inputSummary = [
+    `Age group: ${input?.ageGroup}`,
+    input?.transcript && `Voice Input: ${input.transcript}`,
+    (input?.selectedSymptoms ?? [])?.length > 0 &&
+      `User Inputs: ${input?.selectedSymptoms
+        .map((s) => s.replace(/_/g, " "))
+        .join(", ")}`
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   return {
     eventId: makeId(),
@@ -60,7 +70,7 @@ function intakeCompleted(params: {
       agent: {
         name: "Agent 1 · Intake Interpreter"
       },
-      input: params.rawText,
+      input: inputSummary,
 
       headline: `Observables extracted — ${observables.length} mapped, ${unknownMentions.length} unmapped`,
       bullets: [
@@ -75,7 +85,7 @@ function intakeCompleted(params: {
       scores: {}
     },
     debugDetail: {
-      input: { rawText: params.rawText },
+      input: { input },
       output: { observables, unknownMentions }
     }
   };

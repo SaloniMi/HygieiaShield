@@ -1,9 +1,0 @@
-facility_id,facility_name,care_type,active_encounters,max_capacity,surge_index,latitude,longitude
-FAC-01,City Central Hospital ER,ER,82,100,0.82,19.0176,72.8562
-FAC-02,Westside Trauma Center,ER,45,80,0.56,19.1136,72.8697
-FAC-03,Metro General Hospital ER,ER,95,120,0.79,19.0596,72.8295
-FAC-04,Sunrise Clinic Urgent Care,Urgent Care,30,60,0.50,19.1200,72.9100
-FAC-05,Northcare Emergency Unit,ER,70,90,0.78,19.1800,72.8400
-FAC-06,Harborview Hospital ER,ER,88,110,0.80,19.0200,72.8700
-FAC-07,City Central OPD,Outpatient,120,200,0.60,19.0176,72.8562
-FAC-08,Eastside Emergency Hospital,ER,40,70,0.57,19.2000,72.9000

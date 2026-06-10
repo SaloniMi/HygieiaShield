@@ -1,7 +1,7 @@
 import { runNurseAssessmentWorkflow } from "@hygieiashield/core";
-import { appendVitals, updateClinicalAssessment, updateEncounter } from "../../db/repositories/fhir.repository.js";
 import { generateDoctorBriefAsync } from "../../services/generate-doctor-brief.service.js";
 import { mongoEventBus } from '../../services/mongo-event-bus.service.js'
+import { postProcessPatientVitalsArrival } from "../../services/process-arrival.service.js";
 
 export async function updateVitals(req, res, next) {
     try {
@@ -28,13 +28,10 @@ export async function updateVitals(req, res, next) {
                 message: "Gatekeeper failed to process vitals. Please try again."
             });
         }
-        const { response = {}, persistence = {} } = result ?? {};
-        await appendVitals(patient.token, persistence.observations ?? [])
-        await updateClinicalAssessment(patient.token, {
-            vitalFlags: persistence.vitalFlags ?? []
-        });
 
-        await updateEncounter(patient.token, { status: "ARRIVED", esiLevel: response.finalESI })
+        const { response = {}, persistence = {} } = result ?? {};
+
+        await postProcessPatientVitalsArrival(patient, result)
 
         generateDoctorBriefAsync({
             token: patient.token,

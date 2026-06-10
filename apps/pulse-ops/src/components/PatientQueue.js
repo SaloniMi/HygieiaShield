@@ -36,12 +36,12 @@ export default function PatientQueue({
         (p) => p.status === 'PLANNED'
     );
 
-    const arrivedPatients = sortedPatients.filter(
+    const triagedPatients = sortedPatients.filter(
         (p) => p.status === 'ARRIVED'
     );
 
-    const admittedPatients = sortedPatients.filter(
-        (p) => p.status === 'IN_CARE'
+    const acknowledgedPatients = sortedPatients.filter(
+        (p) => p.status === 'ACKNOWLEDGED'
     );
 
     const renderPatient = (patient) => {
@@ -165,23 +165,27 @@ export default function PatientQueue({
             {/* Queue List Area (.queue) */}
             <div className="flex-1 overflow-y-auto">
 
-                {/* Incoming Section Head (.sidebar-section) */}
-                <div className="px-3.5 pb-1.5 pt-3 text-[10px] font-bold tracking-[0.5px] text-[#9a9994] uppercase">
-                    Incoming
-                </div>
+                {incomingPatients.length !== 0 && (
+                    <div className="px-3.5 pb-1.5 pt-3 text-[10px] font-bold tracking-[0.5px] text-[#9a9994] uppercase">
+                        Incoming
+                    </div>
+                )}
                 {incomingPatients.map(renderPatient)}
 
-                {/* Incoming Section Head (.sidebar-section) */}
-                <div className="px-3.5 pb-1.5 pt-3 text-[10px] font-bold tracking-[0.5px] text-[#9a9994] uppercase">
-                    Triaged
-                </div>
-                {arrivedPatients.map(renderPatient)}
 
-                {/* Admitted Section Head (.sidebar-section with custom margin) */}
-                <div className="px-3.5 pb-1.5 pt-4 text-[10px] font-bold tracking-[0.5px] text-[#9a9994] uppercase">
-                    Admitted
-                </div>
-                {admittedPatients.map(renderPatient)}
+                {triagedPatients.length !== 0 && (
+                    <div className="px-3.5 pb-1.5 pt-3 text-[10px] font-bold tracking-[0.5px] text-[#9a9994] uppercase">
+                        Triaged
+                    </div>
+                )}
+                {triagedPatients.map(renderPatient)}
+
+                {acknowledgedPatients.length !== 0 && (
+                    <div className="px-3.5 pb-1.5 pt-3 text-[10px] font-bold tracking-[0.5px] text-[#9a9994] uppercase">
+                        Waiting for ward
+                    </div>
+                )}
+                {acknowledgedPatients.map(renderPatient)}
 
                 {/* Empty State (.notice fallback structure) */}
                 {sortedPatients.length === 0 && (

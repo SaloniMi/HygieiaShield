@@ -50,15 +50,32 @@ export const buildDoctorBriefPrompt = (vitalFlags: VitalFlag[] = []) => {
   - Do not output \`\`\`json blocks.
   - Do not add explanations before or after the JSON.
 
-  ## Vital signs already flagged — DO NOT repeat in riskFlags
- 
-  The following vital sign abnormalities have already been identified by a separate
-  deterministic validation system. They will be displayed to the physician separately.
-  Do NOT repeat or mention any item from this exclusion list in riskFlags.
-  
+  # IMPORTANT
+  riskFlags MUST NOT contain any information derived from the exclusion list given below -
+    
   ## ============================== EXCLUSION LIST==============================
   ${exclusionList}
   ## ============================== END OF EXCLUSION LIST ======================
+ 
+  The following vital sign abnormalities have already been identified by a separate
+  deterministic validation system. They will be displayed to the physician separately.
+  Do NOT repeat or mention any item from this exclusion list in riskFlags. 
+  If a riskFlag is caused by one of the above findings, omit it completely.
+
+  Violation examples:
+
+    EXCLUSION:
+    - Tachycardia
+    - Hypoxemia
+
+    INVALID riskFlags:
+    [
+      "Tachycardia",
+      "Elevated heart rate",
+      "Heart rate above normal",
+      "Reduced oxygen saturation",
+      "Hypoxemia risk"
+    ]
   
   However, riskFlags may include additional concerns derived from:
   - Observables
@@ -68,14 +85,14 @@ export const buildDoctorBriefPrompt = (vitalFlags: VitalFlag[] = []) => {
   Examples:
   If SpO₂ and heart rate are already listed above, do not mention them again.
 
-  However, if respiratory rate, blood pressure, temperature, or another vital sign
-  suggests elevated risk and is NOT present in the exclusion list, it may be included
+  However, if blood pressure, temperature, or another vital sign suggests elevated risk and is NOT present in the exclusion list, it may be included
   as a riskFlag.
 
   Risk flags derived from non-excluded vitals should be phrased as observations or
   potential concerns rather than diagnoses.
   Never diagnose a condition from a vital sign.
   If no additional risk flags exist beyond the above, return riskFlags as [].
+  
   
   ## Response Format
 

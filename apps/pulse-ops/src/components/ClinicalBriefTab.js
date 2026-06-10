@@ -159,10 +159,10 @@ export default function ClinicalBriefTab({ patient, isActive }) {
                     {patient.patientNotes && patient.patientNotes.length > 0 && (
                         <section>
                             <h3 className="text-[11px] font-bold text-gray-400 mb-2.5 uppercase tracking-wider">
-                                Pre-arrival observables
+                                Pre-arrival Additional Symptoms
                             </h3>
                             <div className="flex flex-wrap gap-1.5">
-                                {patient.observables.map((observable) => (
+                                {patient.patientNotes.map((observable) => (
                                     <span
                                         key={observable}
                                         className="inline-block bg-[#EEEDFE] text-[#3C3489] border border-[#AFA9EC] text-[11px] font-medium px-2.5 py-0.5 rounded-full"

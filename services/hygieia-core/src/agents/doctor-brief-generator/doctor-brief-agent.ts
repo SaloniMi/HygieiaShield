@@ -17,7 +17,6 @@ export async function generateDoctorBrief(
   const input = doctorBriefInputSchema.parse(rawInput);
 
   const llm = createLLM();
-  console.log(buildDoctorBriefPrompt(input.vitalFlags));
 
   const result = await llm.generateStructuredOutput({
     systemPrompt: buildDoctorBriefPrompt(input.vitalFlags),
