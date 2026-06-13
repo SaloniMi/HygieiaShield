@@ -73,6 +73,7 @@ export async function runTriageWorkflow(
     patientName: input.patientName,
     ageGroup: input.ageGroup,
     observables: intake.observables,
+    unknownMentions: intake.unknownMentions,
     esiLevel: gatekeeperResult.finalESI,
     careType: routingResult?.careType,
     facilityId: routingResult?.recommendedFacility?.facility_id

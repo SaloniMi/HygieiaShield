@@ -100,10 +100,16 @@ export async function updateEncounter(
 
     const arrayFilters = [];
 
+    // -------------------
+    // STATUS
+    // -------------------
     if (status) {
         update["encounter.status"] = status;
     }
 
+    // -------------------
+    // ESI LEVEL
+    // -------------------
     if (esiLevel !== undefined) {
         update["encounter.extension.$[esi].valueString"] = String(esiLevel);
 
@@ -112,6 +118,9 @@ export async function updateEncounter(
         });
     }
 
+    // -------------------
+    // DESTINATION CARE TYPE
+    // -------------------
     if (destinationCareType !== undefined) {
         update["encounter.extension.$[dest].valueString"] = String(destinationCareType);
 
@@ -120,21 +129,61 @@ export async function updateEncounter(
         });
     }
 
+    // -------------------
+    // WARD TYPE (FIXED)
+    // -------------------
     if (wardType !== undefined) {
-        update["encounter.extension.$[ward].valueString"] = String(destinationCareType);
+        update["encounter.extension.$[ward].valueString"] = String(wardType);
 
         arrayFilters.push({
             "ward.url": "https://hygieia.dev/recommended-ward-type"
         });
     }
 
-    return db.collection(COLLECTION).updateOne(
+    const result = await db.collection(COLLECTION).updateOne(
         { token },
         { $set: update },
-        {
-            arrayFilters
-        }
+        { arrayFilters }
     );
+
+    // -------------------
+    // FALLBACK: ensure extensions exist (NO REGRESSION SAFETY)
+    // -------------------
+    const missingPush = {};
+
+    if (esiLevel !== undefined) {
+        missingPush["encounter.extension"] = missingPush["encounter.extension"] || [];
+        missingPush["encounter.extension"].push({
+            url: "https://hygieia.dev/esi-level",
+            valueString: String(esiLevel)
+        });
+    }
+
+    if (destinationCareType !== undefined) {
+        missingPush["encounter.extension"] = missingPush["encounter.extension"] || [];
+        missingPush["encounter.extension"].push({
+            url: "https://hygieia.dev/destination-care-type",
+            valueString: String(destinationCareType)
+        });
+    }
+
+    if (wardType !== undefined) {
+        missingPush["encounter.extension"] = missingPush["encounter.extension"] || [];
+        missingPush["encounter.extension"].push({
+            url: "https://hygieia.dev/recommended-ward-type",
+            valueString: String(wardType)
+        });
+    }
+
+    // Only run fallback if nothing was modified by $set
+    if (result.modifiedCount === 0 && Object.keys(missingPush).length > 0) {
+        await db.collection(COLLECTION).updateOne(
+            { token },
+            { $push: missingPush }
+        );
+    }
+
+    return result;
 }
 
 export async function getPatientRecords(facilityId) {
@@ -246,7 +295,7 @@ export async function getActiveEncounters(facilityId) {
             {
                 $match: {
                     "encounter.status": {
-                        $in: ["ACKNOWLEDGED"]
+                        $in: ["ACKNOWLEDGED", "ARRIVED"]
                     }
                 }
             },
@@ -297,6 +346,27 @@ export async function getActiveEncounters(facilityId) {
                                 }
                             },
                             in: "$$careType.valueString"
+                        }
+                    },
+                    wardType: {
+                        $let: {
+                            vars: {
+                                wardType: {
+                                    $first: {
+                                        $filter: {
+                                            input: "$encounter.extension",
+                                            as: "ext",
+                                            cond: {
+                                                $eq: [
+                                                    "$$ext.url",
+                                                    "https://hygieia.dev/recommended-ward-type"
+                                                ]
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            in: "$$wardType.valueString"
                         }
                     },
                     esiLevel: {

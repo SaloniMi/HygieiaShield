@@ -49,24 +49,104 @@ export const observableSchema = z.enum([
   "SEXUAL_ASSAULT_OR_DOMESTIC_VIOLENCE", // Survivors of violence presenting with associated acute trauma/distress [cite: 431, 455, 456]
 
   // =========================================================================
-  // === DECISION POINT C & D: RESOURCE ESTIMATION & VITAL SIGNS (LEVEL 3) ===
+  // === ESI LEVEL 3: STABLE BUT MANY RESOURCES (2+) ========================
   // =========================================================================
-  "STABLE_ABDOMINAL_PAIN", // Constant localized abdominal pain (requires labs + CT scan = Many resources) [cite: 262, 858]
-  "STABLE_CHEST_PAIN", // Non-cardiac profile chest pain (requires ECG + labs = Many resources) [cite: 262]
-  "SUSPECTED_DEEP_VEIN_THROMBOSIS", // Unilateral leg swelling and pain (requires labs + ultrasound = Many resources) [cite: 262, 753]
-  "COMPLEX_LACERATION_OR_SEDATION", // Complex wounds needing procedural sedation or complex repair (= 2 resources) [cite: 262, 755]
-  "STABLE_PRODUCTIVE_COUGH", // Productive cough/fever with stable vitals initially (requires labs + X-ray = Many resources) [cite: 262, 850]
+
+  // -- Respiratory (stable, not requiring immediate intervention) --
+  "PRODUCTIVE_COUGH_WITH_FEVER",
+  // Pneumonia presentation, stable vitals (labs + imaging = 2 resources)
+
+  "MODERATE_RESPIRATORY_DISTRESS",
+  // Tachypnea/wheezing without severe compromise (labs + nebulized meds + imaging)
+
+  // -- Abdominal (stable, multi-resource workup) --
+  "ABDOMINAL_PAIN_STABLE",
+  // Non-pregnancy, stable vitals (labs + CT + IV fluids = 3 resources)
+
+  "NAUSEA_VOMITING_DEHYDRATION",
+  // IV fluids + labs = 2 resources
+
+  // -- Cardiovascular (stable, multi-resource workup) --
+  "NON_CARDIAC_CHEST_PAIN",
+  // Musculoskeletal or GI chest pain profile needing ECG + labs = 2 resources
+
+  // -- Neurological (stable) --
+  "HEADACHE_STABLE_LOW_RISK",
+  // No thunderclap, no nuchal rigidity — labs + imaging = 2 resources
+
+  "POST_ICTAL_ALERT_ORIENTED",
+  // Known seizure history, now alert (imaging + labs)
+
+  // -- Trauma/Orthopedic (multi-resource) --
+  "POSSIBLE_FRACTURE_IMAGING_NEEDED",
+  // Suspected fracture requiring X-ray + possible IV pain management = 2 resources
+
+  // -- Infectious / Systemic --
+  "FEVER_ADULT_WITH_SOURCE",
+  // Adult with identifiable fever source, stable (labs = 1-2 resources)
+
+  "FLANK_PAIN_POSSIBLE_RENAL_COLIC",
+  // Labs + CT = 2 resources — also ESI 2 if severe systemic pain
+
+  // -- Vascular --
+  "SUSPECTED_DVT",
+  // Unilateral leg swelling (labs + ultrasound = 2 resources)
 
   // =========================================================================
-  // === LOW ACUITY / ONE OR NO RESOURCES (ESI LEVEL 4 & 5) =================
+  // === ESI LEVEL 4: STABLE, ONE RESOURCE ==================================
   // =========================================================================
-  "SIMPLE_LACERATION_OR_CATHETER", // Minor cut requiring simple suturing or uncomplicated catheter insertion (= 1 resource) [cite: 262, 755]
-  "DYSURIA_STABLE_ADULT", // Painful urination with stable vitals (requires urine analysis/culture = 1 resource) [cite: 753]
-  "ACUTE_SORE_THROAT", // Swallowing pain, stable vitals (requires throat swab/culture = 1 resource) [cite: 753]
-  "MINOR_ORTHOPEDIC_INJURY", // Isolated sprain/strain needing minor dressing/splint (Crutches/splints = Not ESI resources) [cite: 262, 755]
-  "EAR_PAIN_STABLE_CHILD", // Simple otitis media evaluation (Exam + prescription = 0 resources) [cite: 753]
-  "MEDICATION_REFILL_REQUEST", // Asymptomatic patient needing standard outpatient renewal (0 resources) [cite: 753, 755]
-  "MILD_RASH_NO_DISTRESS" // Localized dermatological presentation, completely stable vitals (0 resources) [cite: 262]
+
+  "SORE_THROAT_STABLE",
+  // Exam + throat culture = 1 resource
+
+  "DYSURIA_UNCOMPLICATED",
+  // Exam + urine = 1 resource
+
+  "SIMPLE_LACERATION_REPAIR_NEEDED",
+  // Simple procedure = 1 resource
+
+  "EAR_PAIN_STABLE",
+  // Exam + prescription = 0 or 1 depending on culture
+
+  "CONJUNCTIVITIS_OR_EYE_REDNESS",
+  // Stable, no vision loss — exam + prescription
+
+  "MINOR_SKIN_INFECTION",
+  // Cellulitis without systemic signs — exam + possible culture = 1 resource
+
+  "STABLE_BACK_PAIN",
+  // Musculoskeletal, no red flags, no neuro deficit — exam + oral meds
+
+  "STABLE_ALLERGIC_REACTION",
+  // Mild hives, no airway involvement — exam + oral meds
+
+  "MILD_ASTHMA_EXACERBATION",
+  // Not in severe distress — exam + nebulized medication = 1 resource
+
+  "URINARY_CATHETER_INSERTION",
+  // Simple procedure = 1 resource
+
+  // =========================================================================
+  // === ESI LEVEL 5: STABLE, NO RESOURCES ==================================
+  // =========================================================================
+
+  "MEDICATION_REFILL_ONLY",
+  // Asymptomatic, exam + prescription = 0 resources
+
+  "MINOR_ABRASION_NO_REPAIR",
+  // Wound care only, no sutures = 0 resources
+
+  "IMMUNIZATION_ONLY",
+  // Tetanus = not an ESI resource
+
+  "PRESCRIPTION_ONLY_VISIT",
+  // Lost inhaler, stable, needs prescription = 0 resources
+
+  "MINOR_UPPER_RESPIRATORY_INFECTION",
+  // Common cold presentation, stable vitals, exam + prescription
+
+  "STABLE_RASH_NO_DISTRESS"
+  // Localized, no systemic involvement
 ]);
 
 export const observablesSchema = z.array(observableSchema);

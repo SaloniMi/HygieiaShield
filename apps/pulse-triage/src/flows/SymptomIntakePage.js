@@ -139,9 +139,6 @@ export default function Step2Page({
                 })
             });
 
-            console.log('Duration:', Date.now() - start, 'ms');
-            console.log('Status:', response.status);
-
             if (!response.ok) {
                 throw new Error('Triage request failed');
             }

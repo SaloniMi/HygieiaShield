@@ -28,8 +28,6 @@ export async function postProcessPatientVitalsArrival(patient, result) {
         );
     }
 
-    console.log(response)
-
     // Update encounter of the patient to have been ARRIVED and the final ESI Level
     await updateEncounter(patient.token, {
         status: "ARRIVED",

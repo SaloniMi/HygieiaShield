@@ -38,16 +38,23 @@ export async function runIntakeInterpreter(
   ctx: AgentContext
 ): Promise<IntakeOutput> {
   const input = intakeInputSchema.parse(rawInput);
-
-  const start = Date.now();
+  console.log("STARTING INTAKE INTERPRETER:", input);
+  const start = performance.now();
 
   // Extracts observables using LLM extraction technique
-  const extracted = await extractObservables(input);
+  const extracted = await extractObservables(input); // await extractObservables(input); // { observables: [], unknownMentions: [] };
 
   const parsedOutput = intakeOutputSchema.parse({
     observables: extracted.observables ?? [],
     unknownMentions: extracted.unknownMentions
   });
+
+  const end = performance.now();
+  console.log(
+    "INTAKE INTERPRETER:",
+    parsedOutput,
+    `Execution time: ${end - start} ms`
+  );
 
   // TODO: Change the agent trace
   const event = AgentEventLogger.intakeCompleted({
@@ -55,7 +62,7 @@ export async function runIntakeInterpreter(
     observables: extracted.observables ?? [],
     unknownMentions: extracted.unknownMentions,
     input,
-    latencyMs: Date.now() - start
+    latencyMs: end - start
   });
 
   await ctx.eventBus.publish(event);

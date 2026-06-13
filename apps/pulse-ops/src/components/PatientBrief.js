@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { ESI_LEVELS } from '@/constants/esi-severity';
+import { useSession } from 'next-auth/react';
 import ClinicalBriefTab from './ClinicalBriefTab';
 import VitalsEntryTab from './VitalsEntryTab';
 import AgentTraceTab from './AgentTraceTab';
@@ -31,6 +32,7 @@ const INITIAL_VITALS = Object.entries(VITALS_LOINC).reduce(
     {}
 );
 export default function PatientBrief({ patientId, isLoading }) {
+    const { data: session, status } = useSession();
     const [patient, setPatient] = useState(null);
     const [activeTab, setActiveTab] = useState('clinical-brief');
     const [isAcknowledged, setIsAcknowledged] = useState(patient?.status === "ACKNOWLEDGED");
@@ -290,11 +292,17 @@ export default function PatientBrief({ patientId, isLoading }) {
 
     const esiInfo = ESI_LEVELS[patient.esiLevel] || ESI_LEVELS[3];
 
-    const tabs = [
+    let tabs = [
         { id: 'clinical-brief', label: 'Clinical brief' },
         { id: 'vitals-entry', label: 'Vitals entry' },
         { id: 'agent-trace', label: 'Agent trace' }
     ];
+    if (session?.user?.role === "doctor") {
+        tabs = [
+            { id: 'clinical-brief', label: 'Clinical brief' }
+        ];
+    }
+
 
     const getSeverityBadgeClass = (label) => {
         if (label?.toLowerCase().includes('critical') || patient.esiLevel <= 2) {
@@ -378,7 +386,7 @@ export default function PatientBrief({ patientId, isLoading }) {
                 </div>
 
                 {/* FOOTER */}
-                <DashboardFooter onAcknowledge={handleAcknowledge} isDisabled={patient?.status !== "ARRIVED"} isAcknowledged={isAcknowledged} />
+                <DashboardFooter onAcknowledge={handleAcknowledge} isDisabled={patient?.status !== "ARRIVED"} acknowledgePermissionAllowed={session?.user?.role !== "doctor"} isAcknowledged={isAcknowledged} />
             </div>
         </div>
     );

@@ -1,10 +1,10 @@
 import { MemoryVectorStore } from "@langchain/classic/vectorstores/memory";
 import { OllamaEmbeddings } from "@langchain/ollama";
 import { Document } from "@langchain/core/documents";
-import { HandbookRetriever } from "./retriever.interface.js";
-import { HandbookChunk } from "./handbook.chunker.js";
+import { HandbookRetriever, RetrievalContext } from "../retriever.interface.js";
+import { HandbookChunk } from "../handbook.chunker.js";
 
-export class LocalVectorRetriever implements HandbookRetriever {
+export class LocalProvider implements HandbookRetriever {
   private vectorStore: MemoryVectorStore;
 
   constructor(vectorStore: MemoryVectorStore) {
@@ -29,21 +29,24 @@ export class LocalVectorRetriever implements HandbookRetriever {
       embeddings
     );
 
-    return new LocalVectorRetriever(store);
+    return new LocalProvider(store);
   }
 
-  async retrieve(
-    context: {
-      observables: string[];
-      unknownMentions: string[];
-    },
-    limit = 5
-  ) {
+  async retrieve(context: RetrievalContext, limit = 5): Promise<string[]> {
+    console.log(context);
     const query = [...context.observables, ...context.unknownMentions].join(
       " "
     );
 
-    const docs = await this.vectorStore.similaritySearch(query, limit);
+    const vitalsText = context.vitals
+      ? Object.entries(context.vitals)
+          .map(([key, value]) => `${key}: ${value}`)
+          .join(", ")
+      : "";
+
+    const searchQuery = `${query}. Vitals: ${vitalsText}`;
+
+    const docs = await this.vectorStore.similaritySearch(searchQuery, limit);
     return docs.map((doc) => doc.pageContent);
   }
 }

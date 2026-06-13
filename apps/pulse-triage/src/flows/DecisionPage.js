@@ -31,12 +31,22 @@ export default function DecisionPage({ data }) {
         window.open(url, '_blank');
     };
 
+    const getTitle = (careType) => {
+        if (careType === "ER") {
+            return "Go to ER"
+        } else if (careType === "UrgentCare") {
+            return "Go to Urgent Care"
+        } else if (careType === "OutPatient") {
+            return "Go to Out Patient Clinic"
+        }
+    }
+
     return (
         <div className="space-y-6">
 
             <ScreenTitle
-                title={decision.careType.routeHint}
-                subtitle="Routing complete. Preparing your care journey"
+                title={getTitle(decision.careType)}
+                subtitle="Routing complete."
                 badgeLabel={decision.patientStatus.tag}
                 badgeStatus={decision.patientStatus.status}
             />

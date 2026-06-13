@@ -12,9 +12,10 @@ export async function generateDoctorBrief(
   rawInput: unknown,
   ctx: AgentContext
 ): Promise<DoctorBriefOutput> {
-  const start = Date.now();
-
   const input = doctorBriefInputSchema.parse(rawInput);
+  console.log("STARTING DOCTOR BRIEF:", input);
+
+  const start = performance.now();
 
   const llm = createLLM();
 
@@ -27,11 +28,18 @@ export async function generateDoctorBrief(
       observables: input.observables,
       vitals: input.vitals
     },
-    schema: doctorBriefOutputSchema,
-    model: "medgemma:4b"
+    schema: doctorBriefOutputSchema
   });
 
   const parsedResult = doctorBriefOutputSchema.parse(result);
+
+  const end = performance.now();
+  console.log(
+    "DOCTOR BRIEF:",
+    parsedResult,
+    `Execution time: ${end - start} ms`
+  );
+
   const event = AgentEventLogger.doctorBriefGenerated({
     trace: ctx.trace,
     input,

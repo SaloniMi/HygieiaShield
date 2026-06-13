@@ -183,6 +183,21 @@ export default function ShiftCoordinatorDashboard({ facilityId }) {
         ((totalOccupied + totalPending) / totalCapacity) * 100
     );
 
+    const getSeverityBadgeClass = (ward) => {
+        if (ward === "ICU") {
+            return 'bg-[#F7C1C1] text-[#791F1F]';
+        }
+        if (ward === "GENERAL") {
+            return 'bg-[#B5D4F4] text-[#042C53]';
+        }
+    };
+
+    const sortedEncounters = [...encounters].sort((a, b) => {
+        if (a.encounterStatus === "ARRIVED") return -1;
+        if (b.encounterStatus === "ARRIVED") return 1;
+        return 0;
+    });
+
     return (
         <div className="flex-1 flex flex-col min-w-0 overflow-y-auto p-4 md:p-[16px] bg-[#f4f3f0] text-[#1a1a18] font-sans antialiased selection:bg-[#B5D4F4]">
 
@@ -411,8 +426,8 @@ export default function ShiftCoordinatorDashboard({ facilityId }) {
                     </h2>
 
                     <div className="space-y-1.5 flex-1">
-                        {encounters.map((encounter) => (
-                            <div key={encounter.encounterId} className="flex items-center justify-between p-2 rounded-[10px] bg-white border border-black/[0.04]">
+                        {sortedEncounters.map((encounter) => (
+                            <div key={encounter.encounterId} className="flex items-center justify-between p-2 rounded-[10px] bg-white border border-black/[0.04]" >
                                 <div className="flex items-center gap-3">
                                     <span className="text-[11px] font-mono text-[#6b6a66] w-14">
                                         {encounter.token}
@@ -423,18 +438,22 @@ export default function ShiftCoordinatorDashboard({ facilityId }) {
                                 </div>
 
                                 <div className="flex items-center gap-2.5">
-                                    {encounter.status === "ACKNOWLEDGED" && (
-                                        <span className="text-[11px] font-medium bg-[#9FE1CB]/30 text-[#085041] px-2 py-0.5 rounded-full border border-[#9FE1CB]/50">
-                                            {encounter.status}
+                                    <span className="text-[11px] font-medium bg-[#9FE1CB]/30 text-[#085041] px-2 py-0.5 rounded-full border border-[#9FE1CB]/50">
+                                        {encounter.encounterStatus}
+                                    </span>
+                                    {encounter.wardType && (
+                                        <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${getSeverityBadgeClass(encounter.wardType)}`}>
+                                            {encounter.wardType}
                                         </span>
                                     )}
-                                    {encounter.status === "COMPLETED" && (
+
+                                    {encounter.encounterStatus === "COMPLETED" && (
                                         <span className="text-[11px] font-medium bg-[#f4f3f0] text-[#6b6a66] px-2 py-0.5 rounded-[6px] border border-black/[0.04]">
                                             Completed
                                         </span>
                                     )}
 
-                                    {encounter.status === "ACKNOWLEDGED" && (
+                                    {encounter.encounterStatus === "ACKNOWLEDGED" && (
                                         <button
                                             disabled={isUpdatingEncounter}
                                             onClick={() =>

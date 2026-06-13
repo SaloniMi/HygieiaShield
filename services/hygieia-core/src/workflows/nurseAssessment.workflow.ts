@@ -18,7 +18,7 @@ export async function runNurseAssessmentWorkflow(
     patient: {
       observables: ObservablesType;
       ageGroup: AgeGroupType;
-      unknownMentions: string[];
+      patientNotes: string[];
       esiLevel: ESILevelType;
       id: string;
       encounterId: string;
@@ -44,8 +44,9 @@ export async function runNurseAssessmentWorkflow(
   const riskAssessment = await runESIEvaluator(
     {
       observables: input.patient.observables ?? [],
-      unknownMentions: input.patient.unknownMentions ?? [],
-      ageGroup: input.patient.ageGroup
+      unknownMentions: input.patient.patientNotes ?? [],
+      ageGroup: input.patient.ageGroup,
+      vitals: input.vitals
     },
     ctx
   );

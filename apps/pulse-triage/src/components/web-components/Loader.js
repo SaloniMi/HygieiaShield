@@ -7,7 +7,7 @@ export default function PulseTriageLoader({
     subtitle = "Analyzing your symptoms"
 }) {
     return (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/90">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/90">
 
             <div className="h-full w-full flex flex-col items-center justify-center bg-[#f8f7f4] dark:bg-slate-950 text-slate-900 dark:text-slate-100">
 

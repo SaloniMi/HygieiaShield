@@ -46,7 +46,6 @@ export async function completeActiveEncounter(req, res, next) {
     try {
         const { facilityId } = req.params;
         const { encounter } = req.body;
-        console.log(encounter)
 
         await Promise.all([
             // Decrement the occupied slot in the care type

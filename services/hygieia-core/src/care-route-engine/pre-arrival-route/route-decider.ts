@@ -27,6 +27,11 @@ export async function determineCareRouteForPreArrival(
     ctx
   );
 
+  console.log("PRE_ARRIVAL CARE ROUTE", {
+    recommendedFacility: careRoute,
+    careType
+  });
+
   return {
     recommendedFacility: careRoute,
     careType

@@ -280,6 +280,7 @@ export async function runGatekeeper(
     };
 
     await publishEvent(result);
+    console.log("DETERMINISTIC GATEKEEPER", result);
     return result;
   }
 

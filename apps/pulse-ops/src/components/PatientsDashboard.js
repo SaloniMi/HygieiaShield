@@ -57,7 +57,7 @@ export default function PatientsDashboard(facility) {
 
         intervalRef.current = setInterval(() => {
             fetchQueue();
-        }, 180000);
+        }, 30000);
 
         return () => {
             cancelledRef.current = true;

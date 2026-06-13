@@ -11,5 +11,12 @@
     "dev": "tsx src/index.ts",
     "start": "node src/server.js",
     "lint": "eslint ."
+  },
+  "dependencies": {
+    "@azure/ai-projects": "^2.2.0",
+    "@azure/core-auth": "^1.10.1",
+    "@azure/identity": "^4.13.1",
+    "@azure/search-documents": "^12.2.0",
+    "openai": "^4.104.0"
   }
 }

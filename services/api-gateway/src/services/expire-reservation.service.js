@@ -1,5 +1,6 @@
 import { decrementPending } from "../db/repositories/facilities.repository.js";
 import { expireReservation } from "../db/repositories/facility-reservation.repository.js";
+import { DESTINATION_TYPE } from "./utils/mapper.js";
 
 export async function expireReservations(expiredReservations) {
     const now = new Date();
@@ -17,11 +18,7 @@ export async function expireReservations(expiredReservations) {
             // Step 2: safe facility counter update
             await decrementPending(
                 res.facilityId,
-                res.careType
-            );
-
-            console.log(
-                `[EXPIRED] encounter=${res.encounterId} facility=${res.facilityId}`
+                DESTINATION_TYPE[res.careType]
             );
 
         } catch (err) {

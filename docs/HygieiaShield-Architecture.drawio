@@ -1,0 +1,208 @@
+<mxfile host="app.diagrams.net" agent="Copilot">
+  <diagram name="HygieiaShield End-to-End Architecture" id="premium-architecture">
+    <mxGraphModel dx="2037" dy="1218" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" background="#F8FAFC" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="hdr_bg" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#0F172A;strokeColor=none;fontSize=13;" value="" vertex="1">
+          <mxGeometry height="70" width="1570" x="40" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="hdr_title" parent="1" style="text;html=1;fontSize=13;fontStyle=1;fontColor=#FFFFFF;align=center;verticalAlign=middle;" value="&lt;font style=&quot;font-size: 17px;&quot;&gt;HYGIEIASHIELD : AZURE AI FOUNDRY MULTI-AGENT EMERGENCY TRIAGE ARCHITECTURE&lt;/font&gt;" vertex="1">
+          <mxGeometry height="70" width="1570" x="40" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="layer1_group" parent="1" style="swimlane;whiteSpace=wrap;html=1;fontSize=13;fontStyle=1;fillColor=#F1F5F9;strokeColor=#CBD5E1;fontColor=#475569;startSize=30;dashed=0;rounded=1;" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;1. USER INTAKE &amp;amp; CLINICAL ENTRY POINTS&lt;/font&gt;" vertex="1">
+          <mxGeometry height="150" width="1570" x="40" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="u1_sammy" parent="layer1_group" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#6366F1;strokeWidth=2;fontSize=13;fontStyle=0;align=center;" value="👤 SAMMY&lt;br&gt;(Family Member)&lt;br&gt;───&lt;br&gt;Voice / Tap Input&lt;br&gt;&lt;b&gt;&quot;Father has chest pain and is sweating&quot;&lt;/b&gt;" vertex="1">
+          <mxGeometry height="105" width="170" x="20" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="prod_priage" parent="layer1_group" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EEF2FF;strokeColor=#4F46E5;strokeWidth=2;fontSize=13;fontStyle=1;align=left;spacingLeft=10;" value="📱 PulseTriage PLATFORM&#xa;───&#xa;• Frictionless Public App&#xa;• Zero-Login Session&#xa;• Audio Streaming Hook" vertex="1">
+          <mxGeometry height="85" width="180" x="450" y="45" as="geometry" />
+        </mxCell>
+        <mxCell id="prod_ops" parent="layer1_group" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#059669;strokeWidth=2;fontSize=13;fontStyle=1;align=left;spacingLeft=10;" value="🏥 PulseOps WORKSTATION&#xa;───&#xa;• Clinical Command Portal&#xa;• Direct Bedside Vitals Input&#xa;• Real-time Capacity Control" vertex="1">
+          <mxGeometry height="85" width="200" x="810" y="45" as="geometry" />
+        </mxCell>
+        <mxCell id="u2_priya" parent="layer1_group" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#10B981;strokeWidth=2;fontSize=13;fontStyle=0;align=center;" value="👩‍⚕️ NURSE PRIYA&#xa;(Triage Nurse)&#xa;───&#xa;Inputs Vital Signs&#xa;(BP, SpO₂, HR via LOINC)" vertex="1">
+          <mxGeometry height="85" width="160" x="1160" y="45" as="geometry" />
+        </mxCell>
+        <mxCell id="u3_anand" parent="layer1_group" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#F59E0B;strokeWidth=2;fontSize=13;fontStyle=0;align=center;" value="👨‍⚕️ DR. ANAND&#xa;(Attending Physician)&#xa;───&#xa;Receives Pre-Arrival&#xa;Structured Insight Brief" vertex="1">
+          <mxGeometry height="85" width="175" x="1357.5" y="42.5" as="geometry" />
+        </mxCell>
+        <mxCell id="JvxHVE2tLq6tbe32aYcf-25" edge="1" parent="layer1_group" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;edgeStyle=orthogonalEdgeStyle;curved=1;dashed=1;dashPattern=8 4 1 4;strokeColor=#EA580C;strokeWidth=2;" target="prod_ops" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="540" y="178" as="sourcePoint" />
+            <mxPoint x="630" y="127.5" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="JvxHVE2tLq6tbe32aYcf-27" connectable="0" parent="JvxHVE2tLq6tbe32aYcf-25" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="&lt;font color=&quot;#ea580c&quot;&gt;&lt;span style=&quot;font-size: 13px;&quot;&gt;Notifies hospital about&lt;/span&gt;&lt;/font&gt;&lt;div&gt;&lt;font color=&quot;#ea580c&quot;&gt;&lt;span style=&quot;font-size: 13px;&quot;&gt;anticipated arrival&lt;/span&gt;&lt;/font&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry relative="1" x="0.5014" y="-11" as="geometry">
+            <mxPoint x="-1" y="12" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="layer2_group" parent="1" style="swimlane;whiteSpace=wrap;html=1;fontSize=13;fontStyle=1;fillColor=#F8FAFC;strokeColor=#94A3B8;fontColor=#334155;startSize=30;rounded=1;align=center;" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; 2. INTELLIGENCE ORCHESTRATION PIPELINE&lt;/font&gt;" vertex="1">
+          <mxGeometry height="389" width="1570" x="40" y="310" as="geometry" />
+        </mxCell>
+        <mxCell id="ag_intake" parent="layer2_group" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFDF5;strokeColor=#D97706;strokeWidth=2;fontSize=13;align=left;spacingLeft=12;" value="&lt;b&gt;🤖 INTAKE INTERPRETER AGENT [GPT-4.1-mini]&lt;br&gt;───&lt;br&gt;• Azure Foundry Model Ecosystem&lt;br&gt;• Parses Noisy Audios/Texts&lt;br&gt;• Maps Text to Observables&lt;br&gt;• Saves Raw Unmapped Signals&lt;/b&gt;" vertex="1">
+          <mxGeometry height="140" width="230" x="10" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="zod_contract_1" parent="layer2_group" style="rhombus;whiteSpace=wrap;html=1;fillColor=#F1F5F9;strokeColor=#475569;fontSize=13;fontStyle=2;align=center;" value="Type-safe via Zod Schema Contract" vertex="1">
+          <mxGeometry height="85" width="150" x="280" y="62.5" as="geometry" />
+        </mxCell>
+        <mxCell id="logic_router" parent="layer2_group" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#2563EB;strokeWidth=2;fontSize=13;align=left;spacingLeft=12;" value="&lt;b&gt;⚙️ CARE-ROUTE ENGINE&lt;br&gt;───&lt;br&gt;• Engine: Pure Math Logic&lt;br&gt;• Multi-Hospital Load Balancer&lt;br&gt;• Evaluates Live Surge Scores&lt;br&gt;• Provisions Target Tokens&lt;/b&gt;" vertex="1">
+          <mxGeometry height="110" width="205" x="962.5" y="229" as="geometry" />
+        </mxCell>
+        <mxCell id="sys_token" parent="layer2_group" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF7ED;strokeColor=#EA580C;strokeWidth=1.5;fontSize=13;align=center;" value="🎟️ RESERVATION TOKEN&#xa;───&#xa;ID: RAVEN-4399-S&#xa;Enables Pre-Arrival Tracking&#xa;&amp;amp; Seamless Hospital Handshake" vertex="1">
+          <mxGeometry height="110" width="180" x="650" y="229" as="geometry" />
+        </mxCell>
+        <mxCell id="sys_hosp" parent="layer2_group" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FAF5FF;strokeColor=#9333EA;strokeWidth=1.5;fontSize=13;align=left;spacingLeft=12;" value="🏥 LIVE FACILITY DATA&lt;br&gt;───&lt;br&gt;• Real-time Emergency Capacity&lt;br&gt;• Active Dynamic Routing Toggles&lt;br&gt;• Cross-Facility System Surge Status" vertex="1">
+          <mxGeometry height="110" width="210" x="1340" y="229" as="geometry" />
+        </mxCell>
+        <mxCell id="ag_esi" parent="layer2_group" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFDF5;strokeColor=#D97706;strokeWidth=2;fontSize=13;align=left;spacingLeft=12;" value="&lt;b&gt;🤖 ESI CALCULATOR AGENT&lt;/b&gt;&lt;div&gt;&lt;b&gt;[GPT-5-mini]&lt;br&gt;───&lt;br&gt;• Grounded by Foundry IQ&lt;br&gt;• Multi-Source Agentic Retrieval&lt;br&gt;• Predicted Resource Index&lt;br&gt;• Generates Traceable Citations&lt;/b&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="140" width="220" x="620" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="logic_gatekeeper" parent="layer2_group" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF5F5;strokeColor=#DC2626;strokeWidth=3;fontSize=13;fontStyle=1;align=left;spacingLeft=12;" value="🔒 DETERMINISTIC GATEKEEPER&lt;div&gt;[NO LLM]&lt;br&gt;───&lt;br&gt;• Engine: Pure Hardcoded Logic&lt;br&gt;• Zero Hallucination Guardrail&lt;br&gt;• Force-Overrides AI Output If Vital Alerts Trigger. Absolute Triage Safe-Stop&lt;/div&gt;" vertex="1">
+          <mxGeometry height="140" width="250" x="940" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="ag_brief" parent="layer2_group" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFDF5;strokeColor=#D97706;strokeWidth=2;fontSize=13;align=left;spacingLeft=12;" value="&lt;b&gt;🤖 DOCTOR BRIEF GENERATOR&lt;/b&gt;&lt;div&gt;&lt;b&gt;[GPT-4.1-mini]&lt;br&gt;───&lt;br&gt;• Hosted Foundry Model Pool&lt;br&gt;• Synthesizes Intake + Vitals&lt;br&gt;• Flags Gatekeeper Alerts First&lt;br&gt;• Formats 10-Second Summaries&lt;/b&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="130" width="230" x="1330" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="e_flow4" edge="1" parent="layer2_group" source="zod_contract_1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#D97706;strokeWidth=2;endArrow=block;fontSize=13;fontColor=#D97706;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" target="ag_esi" value="Validated JSON&amp;nbsp;&lt;div&gt;Observables&lt;/div&gt;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="540" y="115" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_flow5" edge="1" parent="layer2_group" source="ag_esi" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#D97706;strokeWidth=2;endArrow=block;fontSize=13;fontColor=#D97706;" target="logic_gatekeeper" value="Calculated&amp;nbsp;&lt;div&gt;ESI Score&lt;/div&gt;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_flow12" edge="1" parent="layer2_group" source="logic_gatekeeper" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#DC2626;strokeWidth=2;endArrow=block;fontSize=13;fontColor=#DC2626;" target="ag_brief" value="Final Validated&amp;nbsp;&lt;div&gt;Patient Condition&lt;/div&gt;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_flow8" edge="1" parent="layer2_group" source="logic_gatekeeper" style="rounded=1;html=1;strokeColor=#DC2626;strokeWidth=2.5;endArrow=block;fontSize=13;fontColor=#DC2626;exitX=0.5;exitY=1;exitDx=0;exitDy=0;edgeStyle=orthogonalEdgeStyle;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="logic_router" value="Safety-Cleared Clinical Profile Data">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1105" y="200" />
+              <mxPoint x="1105" y="200" />
+            </Array>
+            <mxPoint x="890" y="140" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="JvxHVE2tLq6tbe32aYcf-13" parent="layer2_group" style="rounded=1;whiteSpace=wrap;html=1;fillColor=light-dark(#C4A486,#EDEDED);fontSize=13;strokeColor=#A52A2A;" value="ACUTE_CHEST_PAIN" vertex="1">
+          <mxGeometry height="30" width="140" x="285" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="JvxHVE2tLq6tbe32aYcf-14" parent="layer2_group" style="rounded=1;whiteSpace=wrap;html=1;fillColor=light-dark(#C4A486,#EDEDED);fontSize=13;strokeColor=#A52A2A;" value="sweating" vertex="1">
+          <mxGeometry height="30" width="140" x="285" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="JvxHVE2tLq6tbe32aYcf-17" parent="layer2_group" style="rounded=1;whiteSpace=wrap;html=1;fillColor=light-dark(#C4A486,#EDEDED);" value="&lt;font style=&quot;font-size: 13px;&quot;&gt;ESI: 2&lt;/font&gt;" vertex="1">
+          <mxGeometry height="30" width="85" x="847" y="123" as="geometry" />
+        </mxCell>
+        <mxCell id="JvxHVE2tLq6tbe32aYcf-19" parent="layer2_group" style="rounded=1;whiteSpace=wrap;html=1;fillColor=light-dark(#C4A486,#EDEDED);" value="&lt;font style=&quot;font-size: 13px;&quot;&gt;Confirmed ESI: 2&lt;/font&gt;" vertex="1">
+          <mxGeometry height="37" width="90" x="1220" y="123" as="geometry" />
+        </mxCell>
+        <mxCell id="JvxHVE2tLq6tbe32aYcf-20" parent="layer2_group" style="rounded=1;whiteSpace=wrap;html=1;fillColor=light-dark(#C4A486,#EDEDED);" value="&lt;font style=&quot;font-size: 13px;&quot;&gt;Go to ER in Northcare Hospital&lt;/font&gt;" vertex="1">
+          <mxGeometry height="47" width="100" x="848" y="303" as="geometry" />
+        </mxCell>
+        <mxCell id="layer3_group" parent="1" style="swimlane;whiteSpace=wrap;html=1;fontSize=13;fontStyle=1;fillColor=#F1F5F9;strokeColor=#CBD5E1;fontColor=#475569;startSize=30;rounded=1;" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;3. CLINICAL STANDARDS &amp;amp; FOUNDRY IQ KNOWLEDGE LAYER&lt;/font&gt;" vertex="1">
+          <mxGeometry height="160" width="760" x="40" y="730" as="geometry" />
+        </mxCell>
+        <mxCell id="std_esi" parent="layer3_group" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#059669;fontSize=13;align=left;spacingLeft=12;" value="&lt;b&gt;📘 Foundry IQ KNOWLEDGE BASE&lt;br&gt;&lt;/b&gt;• Grounded ESI v5 Handbooks&lt;br&gt;• Automated Chunk/Vectoring&lt;br&gt;• Semantic Ranker Engine" vertex="1">
+          <mxGeometry height="90" width="195" x="10" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="std_fhir" parent="layer3_group" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#059669;fontSize=13;align=center;" value="&lt;b&gt;🔥 HL7 FHIR R4 MAPS&lt;br&gt;&lt;/b&gt;Standardized Encounter&lt;br&gt;&amp;amp; Patient Resource Mapping" vertex="1">
+          <mxGeometry height="90" width="170" x="212" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="std_loinc" parent="layer3_group" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#059669;fontSize=13;align=left;spacingLeft=12;" value="&lt;b&gt;📊 LOINC DATA CODING&lt;br&gt;&lt;/b&gt;• SpO₂: 59408-5&lt;br&gt;• HR: 8867-4&lt;br&gt;• BP: 8480-6" vertex="1">
+          <mxGeometry height="90" width="190" x="390" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="std_mongo" parent="layer3_group" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#059669;fontSize=13;align=center;" value="&lt;b&gt;🍃 MongoDB CLUSTER&lt;br&gt;&lt;/b&gt;Immutable Audit Trails&lt;br&gt;&amp;amp; Core Patient Telemetry" vertex="1">
+          <mxGeometry height="90" width="162" x="588" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="JvxHVE2tLq6tbe32aYcf-6" edge="1" parent="1" source="layer4_group" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fillColor=#ffe6cc;strokeColor=light-dark(#e65100, #996500);dashed=1;fontSize=13;" target="layer2_group">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="JvxHVE2tLq6tbe32aYcf-8" connectable="0" parent="JvxHVE2tLq6tbe32aYcf-6" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=13;" value="&lt;span style=&quot;color: rgb(230, 81, 0);&quot;&gt;Orchestrates Engine Inferences&lt;/span&gt;" vertex="1">
+          <mxGeometry relative="1" x="-0.1375" y="4" as="geometry">
+            <mxPoint x="-29" y="-4" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="layer4_group" parent="1" style="swimlane;whiteSpace=wrap;html=1;fontSize=13;fontStyle=1;fillColor=#F1F5F9;strokeColor=#CBD5E1;fontColor=#475569;startSize=30;rounded=1;" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;4. AZURE AI FOUNDRY ARCHITECTURE LAYER&lt;/font&gt;" vertex="1">
+          <mxGeometry height="160" width="740" x="820" y="730" as="geometry" />
+        </mxCell>
+        <mxCell id="inf_oai" parent="layer4_group" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF5F1;strokeColor=#E65100;fontSize=13;align=center;" value="&lt;b&gt;☁️ Azure AI Foundry Models&lt;/b&gt;&lt;div&gt;Deployed Base Models&lt;/div&gt;" vertex="1">
+          <mxGeometry height="80" width="350" x="30" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="inf_foundry" parent="layer4_group" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF5F1;strokeColor=#E65100;fontSize=13;align=center;" value="&lt;b&gt;⚡ Foundry IQ ENGINE&lt;br&gt;&lt;/b&gt;&lt;div&gt;Grounded Retrieval&lt;/div&gt;" vertex="1">
+          <mxGeometry height="80" width="280" x="430" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="layer5_group" parent="1" style="swimlane;whiteSpace=wrap;html=1;fontSize=13;fontStyle=1;fillColor=#0F172A;strokeColor=#0F172A;fontColor=#FFFFFF;startSize=30;rounded=1;" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;DESIGN ARCHITECTURE PRINCIPLES &amp;amp; COMPONENT COLOR LEGEND&lt;/font&gt;" vertex="1">
+          <mxGeometry height="190" width="1520" x="40" y="930" as="geometry" />
+        </mxCell>
+        <mxCell id="txt_principles" parent="layer5_group" style="text;html=1;fontSize=13;fontColor=#000000;align=left;verticalAlign=top;" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;🔑 SYSTEM DESIGN ARCHITECTURE KEY PRINCIPLES&lt;br&gt;━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━&lt;br&gt;1. Clear Isolation of Observables vs Metrics: Non-trained family units supply raw symptoms; clinical metrics remain securely restricted to professionals.&lt;br&gt;2. Foundry IQ Grounded Context: Eradicates hallucination paths by executing multi-query iteration loops directly indexed against certified clinical literature.&lt;br&gt;3. Absolute Deterministic Sovereignty: Large Language Models are limited strictly to processing recommendations. Safety rules and facility choices remain hard-coded.&lt;/font&gt;" vertex="1">
+          <mxGeometry height="70" width="940" x="20" y="45" as="geometry" />
+        </mxCell>
+        <mxCell id="txt_color_legend" parent="layer5_group" style="text;html=1;fontSize=13;fontColor=#000000;align=left;verticalAlign=top;" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;🎨 COLOR SYSTEM MAP&lt;br&gt;━━━━━━━━━━━━━━━━━━━━━━━━━━━━━&lt;br&gt;🟡 Hosted Azure AI Foundry Model Agents&lt;br&gt;🔴 Hardcoded Deterministic Gatekeeper&lt;br&gt;🔵 Pure Math-Logic System Care Routing&lt;br&gt;🟢 Foundry IQ Knowledge Bases &amp;amp; Data Hubs&lt;br&gt;🟠 Infrastructure Layers&lt;/font&gt;&lt;div&gt;&lt;span style=&quot;font-size: 14px;&quot;&gt;🟤 Outputs of execution&lt;br&gt;&lt;/span&gt;&lt;div&gt;&lt;font style=&quot;font-size: 14px;&quot;&gt;&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="90" width="340" x="1100" y="45" as="geometry" />
+        </mxCell>
+        <mxCell id="e_flow1" edge="1" parent="1" source="u1_sammy" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#4F46E5;strokeWidth=2;endArrow=block;fontSize=13;fontColor=#4F46E5;" target="prod_priage" value="Streams Unstructured UI Intake">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_flow2" edge="1" parent="1" source="prod_priage" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#4F46E5;strokeWidth=2;endArrow=block;fontSize=13;fontColor=#4F46E5;" target="ag_intake" value="Dispatches Raw&amp;nbsp;&lt;div&gt;User Submissions&lt;/div&gt;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="580" y="280" />
+              <mxPoint x="170" y="280" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_flow3" edge="1" parent="1" source="ag_intake" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#D97706;strokeWidth=2;endArrow=block;fontSize=13;" target="zod_contract_1" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_flow6" edge="1" parent="1" source="u2_priya" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#059669;strokeWidth=2;endArrow=block;fontSize=13;fontColor=#059669;" target="prod_ops" value="Submits Captured&lt;div&gt;&amp;nbsp;Patient Vitals&lt;/div&gt;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_flow7" edge="1" parent="1" source="prod_ops" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#059669;strokeWidth=2;endArrow=block;fontSize=13;fontColor=#059669;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="ag_esi" value="Triggers Automatic Re-Triage Evaluation">
+          <mxGeometry relative="1" x="-0.8667" y="25" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="975" y="290" />
+              <mxPoint x="770" y="290" />
+            </Array>
+            <mxPoint x="935" y="270" as="sourcePoint" />
+            <mxPoint x="825" y="340" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_flow9" edge="1" parent="1" source="logic_router" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#2563EB;strokeWidth=2;endArrow=block;fontSize=13;fontColor=#2563EB;" target="sys_token" value="Generates&amp;nbsp;&lt;div&gt;Allocation Token&lt;/div&gt;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_flow10" edge="1" parent="1" source="sys_hosp" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#9333EA;strokeWidth=1.5;endArrow=block;fontSize=13;fontColor=#9333EA;" target="logic_router" value="Feeds Dynamic&amp;nbsp;&lt;div&gt;Surge Metrics&lt;/div&gt;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_flow11" edge="1" parent="1" source="sys_token" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#EA580C;strokeWidth=1.5;endArrow=block;fontSize=13;fontColor=#EA580C;entryX=0.5;entryY=1;" target="prod_priage" value="Passes Active Pre-Arrival ID">
+          <mxGeometry relative="1" x="-0.28" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="490" y="585" />
+              <mxPoint x="490" y="300" />
+              <mxPoint x="580" y="300" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_flow13" edge="1" parent="1" source="ag_brief" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#D97706;strokeWidth=2;endArrow=block;fontSize=13;fontColor=#D97706;entryX=0.5;entryY=1;" target="u3_anand" value="Delivers Actionable Operational Summary">
+          <mxGeometry relative="1" x="0.4222" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_link1" edge="1" parent="1" source="layer3_group" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#059669;strokeWidth=1.5;dashed=1;endArrow=classic;fontSize=13;fontColor=#059669;exitX=0.5;exitY=0;" value="Foundry IQ Agentic Retrieval Mapping">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="410" y="640" />
+              <mxPoint x="680" y="640" />
+            </Array>
+            <mxPoint x="680" y="490" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
+
+
