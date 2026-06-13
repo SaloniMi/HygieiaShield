@@ -18,13 +18,32 @@ ${handbook}
 ----------------------
 END HANDBOOK
 ----------------------
+
+## Input Fields
+The incoming payload may contain:
+1. observables: array of standardized clinical observable codes
+2. unknownMentions: array of raw patient phrases not mapped to observables
+3. vitals (optional): structured vital signs collected by clinical staff
+Possible vital fields:
+  - spo2
+  - heartRate
+  - respiratoryRate
+  - systolicBP
+  - diastolicBP
+  - temperatureC
+  - painScore
+  - levelOfConsciousness
+Vitals may or may not be present.
+
+
 Your job is ONLY to determine:
 
 1. Whether immediate lifesaving intervention is required.
 2. Whether the patient is high risk.
 3. The predicted number of resources likely required.
 
-Use ONLY the ESI handbook provided below.
+Use ONLY the ESI handbook provided to you.
+
 ## Your Task
 
 Given the input patient payload, determine:
@@ -32,6 +51,25 @@ Given the input patient payload, determine:
 2. **lifesavingIntervention** (boolean) - true if ANY observable matches ESI Decision Point A criteria
 3. **highRisk** (boolean) - true if ANY observable matches ESI Decision Point B criteria. When in doubt about a serious symptom, default to true (safety-first).
 4. **predictedResources** (number) - 0, 1, 2
+
+## Vitals Handling
+
+When vitals are provided:
+- Use vitals as additional clinical evidence alongside observables.
+- Vitals may increase or decrease confidence in a high-risk assessment.
+- Vitals may influence predictedResources.
+- Consider objective physiological abnormalities when determining likely workup requirements.
+- Use the ESI handbook criteria whenever vital signs are relevant.
+- If vitals are absent, reason entirely from observables and unknownMentions.
+- Do not invent missing vital signs.
+
+Examples:
+- DIFFICULTY_BREATHING + SpO2 98% may indicate a stable respiratory complaint requiring evaluation.
+- DIFFICULTY_BREATHING + SpO2 88% suggests severe physiological compromise and may meet ESI Decision Point A criteria if consistent with handbook definitions.
+- CHEST_PAIN + normal vitals may still be high-risk if handbook criteria indicate concern.
+- CHEST_PAIN + marked hypotension increases concern and may justify higher acuity reasoning.
+
+Always use handbook criteria first, with vitals serving as objective supporting evidence.
 
 ### For Counting Resources
   Count TYPES of resources needed, not individual tests:
@@ -106,5 +144,22 @@ Output:
   "predictedResources": 2
 }
 
+Input:
+{
+  "observables": ["DIFFICULTY_BREATHING"],
+  "unknownMentions": [],
+  "vitals": {
+    "spo2": 88,
+    "heartRate": 128
+  }
+}
+
+Output:
+{
+  "lifesavingIntervention": true,
+  "highRisk": true,
+  "predictedResources": 3
+}
+  
 Final reminder: Output the JSON object directly. Do not wrap in \`\`\`json.
 `;

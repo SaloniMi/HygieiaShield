@@ -2,10 +2,9 @@ import { z } from "zod";
 
 export const encounterStatusSchema = z.enum([
   "PLANNED", // Token generated, facility recommended
-  "ARRIVED", // Patient checked in and being evaluated by hospital
-  "IN_CARE", // Being treated / admitted
-  "COMPLETED", // Discharged / encounter finished
-  "EXPIRED" // Reservation expired before arrival
+  "ARRIVED", // Nurse triaged and token acknowledged by hospital
+  "ACKNOWLEDGED", // Patient checked in and acknowledged by hospital after entering vitals
+  "COMPLETED" // Discharged / encounter finished
 ]);
 
 export const ESILevelSchema = z.union([
@@ -19,9 +18,12 @@ export const ESILevelSchema = z.union([
 export const encounterSchema = z.object({
   token: z.string(),
   patientId: z.string(),
+  encounterId: z.string(),
   status: encounterStatusSchema,
   esiLevel: ESILevelSchema,
-  facilityId: z.string().optional()
+  facilityId: z.string().optional(),
+  unknownMentions: z.array(z.string()).optional(),
+  careType: z.string()
 });
 
 export type ESILevelType = z.infer<typeof ESILevelSchema>;

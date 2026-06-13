@@ -3,47 +3,55 @@ export default function SymptomCard({
     label,
     selected,
     onClick,
+    activeSubCount = 0
 }) {
     return (
         <button
             type="button"
             onClick={onClick}
             className={`
-        h-28
-        rounded-3xl
-        border
+            p-5 
+            text-left
+            relative
+            rounded-3xl
+            border
+            justify-between 
+            h-32
 
-        flex
-        flex-col
-        items-center
-        justify-center
-        gap-3
+            flex
+            flex-col
+            gap-3
 
-        px-4
-        text-center
+            transition-all
 
-        transition-all
-
-        ${selected
+            ${selected
                     ? `
-              border-[#4B9BFF]
-              bg-[#EAF3FF]
-            `
+                border-[#4B9BFF]
+                bg-[#EAF3FF]
+                `
                     : `
-              border-slate-300
-              bg-white
-            `
+                border-slate-300
+                bg-white
+                `
                 }
-      `}
+        `}
         >
-            <Icon
-                size={28}
-                className={
-                    selected
-                        ? "text-[#1B65B0]"
-                        : "text-[#6A6A6A]"
-                }
-            />
+            <div className="flex justify-between items-start w-full">
+                <Icon
+                    size={28}
+                    className={
+                        selected
+                            ? "text-[#1B65B0]"
+                            : "text-[#6A6A6A]"
+                    }
+                />
+                {/* PERSISTENT SUB-OBSERVABLE BADGE */}
+                {activeSubCount > 0 && (
+                    <span className="bg-amber-100 text-amber-900 text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-300 animate-fadeIn">
+                        +{activeSubCount} Alert{activeSubCount > 1 ? 's' : ''}
+                    </span>
+                )}
+            </div>
 
             <span
                 className={`

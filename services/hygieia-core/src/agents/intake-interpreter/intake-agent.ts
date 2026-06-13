@@ -3,27 +3,8 @@ import { createLLM } from "../../services/llm/llm.services.js";
 import { intakeOutputSchema, IntakeOutput } from "./schemas/output.schema.js";
 import { buildIntakeInterpreterPrompt } from "./intake.prompt.js";
 import { IntakeInput, intakeInputSchema } from "./schemas/input.schema.js";
-import { observableSchema } from "@hygieiashield/zod-contracts";
-import { UserSymptom } from "@hygieiashield/zod-contracts";
-
-const symptomFallbackMap = {
-  STOMACH_PAIN: ["STABLE_ABDOMINAL_PAIN"],
-  CHEST_PAIN: ["STABLE_CHEST_PAIN"],
-  BREATHING_TROUBLE: ["SEVERE_RESPIRATORY_DISTRESS"],
-  ALTERED_CONSCIOUSNESS: ["UNRESPONSIVE_OR_OBTUNDED"],
-  STROKE_SIGNS: ["ACUTE_STROKE_SYMPTOMS"],
-  SEVERE_HEADACHE: ["THUNDERCLAP_HEADACHE"],
-  ALLERGIC_REACTION: ["MILD_RASH_NO_DISTRESS"],
-  TRAUMA_INJURY: ["MINOR_ORTHOPEDIC_INJURY"],
-  FEVER_INFECTION: ["STABLE_PRODUCTIVE_COUGH"],
-  CRISIS_AND_SAFETY: ["SEVERE_PSYCHOLOGICAL_DISTRESS"]
-};
-
-function fallbackSymptomsToObservables(symptoms: UserSymptom[]): string[] {
-  return [
-    ...new Set(symptoms.flatMap((symptom) => symptomFallbackMap[symptom] ?? []))
-  ];
-}
+import { AgentContext, observableSchema } from "@hygieiashield/zod-contracts";
+import { AgentEventLogger } from "../../realtime/agent-event.logger.js";
 
 export async function extractObservables(input: IntakeInput) {
   // TODO: Azure OpenAI structured output
@@ -53,25 +34,38 @@ export async function extractObservables(input: IntakeInput) {
 }
 
 export async function runIntakeInterpreter(
-  rawInput: unknown
+  rawInput: unknown,
+  ctx: AgentContext
 ): Promise<IntakeOutput> {
   const input = intakeInputSchema.parse(rawInput);
-  const hasTranscript = input.transcript && input.transcript.trim().length > 0;
-
-  // Fast path: tap inputs only
-  if (!hasTranscript) {
-    return intakeOutputSchema.parse({
-      observables: fallbackSymptomsToObservables(input.selectedSymptoms),
-      confidence: 1,
-      unknownMentions: []
-    });
-  }
+  console.log("STARTING INTAKE INTERPRETER:", input);
+  const start = performance.now();
 
   // Extracts observables using LLM extraction technique
-  const extracted = await extractObservables(input);
+  const extracted = await extractObservables(input); // await extractObservables(input); // { observables: [], unknownMentions: [] };
 
-  return intakeOutputSchema.parse({
+  const parsedOutput = intakeOutputSchema.parse({
     observables: extracted.observables ?? [],
     unknownMentions: extracted.unknownMentions
   });
+
+  const end = performance.now();
+  console.log(
+    "INTAKE INTERPRETER:",
+    parsedOutput,
+    `Execution time: ${end - start} ms`
+  );
+
+  // TODO: Change the agent trace
+  const event = AgentEventLogger.intakeCompleted({
+    trace: ctx.trace,
+    observables: extracted.observables ?? [],
+    unknownMentions: extracted.unknownMentions,
+    input,
+    latencyMs: end - start
+  });
+
+  await ctx.eventBus.publish(event);
+
+  return parsedOutput;
 }

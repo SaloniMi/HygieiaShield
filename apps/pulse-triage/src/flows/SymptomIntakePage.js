@@ -133,11 +133,11 @@ export default function Step2Page({
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(data),
+                body: JSON.stringify({
+                    input: data,
+                    trace: {}
+                })
             });
-
-            console.log('Duration:', Date.now() - start, 'ms');
-            console.log('Status:', response.status);
 
             if (!response.ok) {
                 throw new Error('Triage request failed');
@@ -170,9 +170,7 @@ export default function Step2Page({
     return (
         <>
             {isSubmitting && (
-                <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/90">
-                    <PulseTriageLoader />
-                </div>
+                <PulseTriageLoader />
             )}
             <div className="space-y-6">
                 {/* <ScreenTitle

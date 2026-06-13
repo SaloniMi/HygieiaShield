@@ -1,13 +1,12 @@
 // patient.builder.js
 
-import crypto from "crypto";
 import { PatientFHIRType } from "@hygieiashield/zod-contracts";
 
 export function buildPatient(input: PatientFHIRType) {
   return {
     resourceType: "Patient",
 
-    id: crypto.randomUUID(),
+    id: input.patientId,
 
     active: true,
 
