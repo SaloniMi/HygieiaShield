@@ -1,3 +1,46 @@
+- [Project HygieiaShield](#project-hygieiashield)
+  - [AI-Powered Multi-Agent Emergency Triage and Care Orchestration Ecosystem](#ai-powered-multi-agent-emergency-triage-and-care-orchestration-ecosystem)
+- [The Problem](#the-problem)
+  - [Why Existing Solutions Fall Short](#why-existing-solutions-fall-short)
+- [The Solution](#the-solution)
+- [The Ecosystem](#the-ecosystem)
+  - [PulseTriage](#pulsetriage)
+    - [Key Capabilities](#key-capabilities)
+  - [PulseOps](#pulseops)
+    - [Key Capabilities](#key-capabilities-1)
+      - [Clinical Workstation](#clinical-workstation)
+      - [Operations Command Center](#operations-command-center)
+- [One Night. Four Users. One Continuous Journey.](#one-night-four-users-one-continuous-journey)
+  - [1. Sammy — The Family Member](#1-sammy--the-family-member)
+  - [2. Nurse Priya — The Triage Nurse](#2-nurse-priya--the-triage-nurse)
+  - [3. Hospital Operations Coordinator](#3-hospital-operations-coordinator)
+  - [4. Dr. Anand — The Attending Physician](#4-dr-anand--the-attending-physician)
+- [The Outcome](#the-outcome)
+- [Why The Architecture Is Different](#why-the-architecture-is-different)
+  - [Mistake #1](#mistake-1)
+  - [Mistake #2](#mistake-2)
+  - [Principle 1: Separate Observables from Clinical Metrics](#principle-1-separate-observables-from-clinical-metrics)
+    - [Why This Matters](#why-this-matters)
+  - [Principle 2: Asymmetric AI Architecture](#principle-2-asymmetric-ai-architecture)
+    - [Intake Interpreter](#intake-interpreter)
+    - [ESI Calculator Agent](#esi-calculator-agent)
+    - [Deterministic Gatekeeper Agent](#deterministic-gatekeeper-agent)
+    - [Care-Route Engine](#care-route-engine)
+    - [Doctor Brief Generator](#doctor-brief-generator)
+  - [Human Decisions. Machine Assistance.](#human-decisions-machine-assistance)
+  - [Architecture Diagram](#architecture-diagram)
+- [Technology Stack](#technology-stack)
+  - [AI \& Agent Layer](#ai--agent-layer)
+  - [Backend \& Frontend](#backend--frontend)
+  - [Data \& Standards](#data--standards)
+  - [Cloud Infrastructure](#cloud-infrastructure)
+  - [Products](#products)
+- [Clinical Standards](#clinical-standards)
+  - [Emergency Severity Index (ESI v5)](#emergency-severity-index-esi-v5)
+  - [HL7 FHIR R4](#hl7-fhir-r4)
+  - [LOINC](#loinc)
+- [Vision](#vision)
+
 # Project HygieiaShield
 
 ### AI-Powered Multi-Agent Emergency Triage and Care Orchestration Ecosystem
@@ -328,7 +371,7 @@ The Doctor Brief Generator acts as the final intelligence layer in the patient j
 
 ---
 
-# Human Decisions. Machine Assistance.
+## Human Decisions. Machine Assistance.
 
 AI is allowed to:
 
@@ -347,15 +390,21 @@ Those responsibilities belong to deterministic systems that produce identical ou
 
 ---
 
+## Architecture Diagram
+
+![Project Screenshot](HygieiaShieldArchitecture.png)
+
+---
+
 # Technology Stack
 
-#### AI & Agent Layer
+### AI & Agent Layer
 
 - Azure OpenAI GPT-4.1-mini — Intake Interpreter Agent
 - Azure OpenAI GPT-5-mini — ESI Calculator Agent
 - Azure AI Foundry Knowledge & Retrieval — Grounded ESI v5 reasoning
 
-#### Backend & Frontend
+### Backend & Frontend
 
 - Next.js 15
 - TypeScript
@@ -363,16 +412,16 @@ Those responsibilities belong to deterministic systems that produce identical ou
 - RESTful APIs
 - Zod — Runtime schema validation and type-safe agent contracts
 
-#### Data & Standards
+### Data & Standards
 
 - MongoDB
 
-#### Cloud Infrastructure
+### Cloud Infrastructure
 
 - Azure AI Foundry
 - Azure OpenAI Service
 
-#### Products
+### Products
 
 - PulseTriage — Public Emergency Intake Platform
 - PulseOps — Clinical Operations & Command Center
@@ -410,9 +459,3 @@ Standardized coding for clinical measurements, including:
 It is hospitals that are already prepared before the patient arrives.
 
 **That is Project HygieiaShield.**
-
----
-
-# Architecture Diagram
-
-![Project Screenshot](HygieiaShieldArchitecture.png)
