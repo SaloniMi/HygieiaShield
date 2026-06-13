@@ -1,7 +1,7 @@
 - [Project HygieiaShield](#project-hygieiashield)
-  - [AI-Powered Multi-Agent Emergency Triage and Care Orchestration Ecosystem](#ai-powered-multi-agent-emergency-triage-and-care-orchestration-ecosystem)
+    - [AI-Powered Multi-Agent Emergency Triage and Care Orchestration Ecosystem](#ai-powered-multi-agent-emergency-triage-and-care-orchestration-ecosystem)
 - [The Problem](#the-problem)
-  - [Why Existing Solutions Fall Short](#why-existing-solutions-fall-short)
+    - [Why Existing Solutions Fall Short](#why-existing-solutions-fall-short)
 - [The Solution](#the-solution)
 - [The Ecosystem](#the-ecosystem)
   - [PulseTriage](#pulsetriage)
@@ -17,12 +17,12 @@
   - [4. Dr. Anand — The Attending Physician](#4-dr-anand--the-attending-physician)
 - [The Outcome](#the-outcome)
 - [Why The Architecture Is Different](#why-the-architecture-is-different)
-  - [Mistake #1](#mistake-1)
-  - [Mistake #2](#mistake-2)
+    - [Mistake #1](#mistake-1)
+    - [Mistake #2](#mistake-2)
   - [Principle 1: Separate Observables from Clinical Metrics](#principle-1-separate-observables-from-clinical-metrics)
-    - [Why This Matters](#why-this-matters)
+      - [Why This Matters](#why-this-matters)
   - [Principle 2: Asymmetric AI Architecture](#principle-2-asymmetric-ai-architecture)
-    - [Intake Interpreter](#intake-interpreter)
+      - [Intake Interpreter](#intake-interpreter)
     - [ESI Calculator Agent](#esi-calculator-agent)
     - [Deterministic Gatekeeper Agent](#deterministic-gatekeeper-agent)
     - [Care-Route Engine](#care-route-engine)
@@ -30,15 +30,15 @@
   - [Human Decisions. Machine Assistance.](#human-decisions-machine-assistance)
   - [Architecture Diagram](#architecture-diagram)
 - [Technology Stack](#technology-stack)
-  - [AI \& Agent Layer](#ai--agent-layer)
-  - [Backend \& Frontend](#backend--frontend)
-  - [Data \& Standards](#data--standards)
-  - [Cloud Infrastructure](#cloud-infrastructure)
-  - [Products](#products)
+    - [AI \& Agent Layer](#ai--agent-layer)
+    - [Backend \& Frontend](#backend--frontend)
+    - [Data \& Standards](#data--standards)
+    - [Cloud Infrastructure](#cloud-infrastructure)
+    - [Products](#products)
 - [Clinical Standards](#clinical-standards)
-  - [Emergency Severity Index (ESI v5)](#emergency-severity-index-esi-v5)
-  - [HL7 FHIR R4](#hl7-fhir-r4)
-  - [LOINC](#loinc)
+    - [Emergency Severity Index (ESI v5)](#emergency-severity-index-esi-v5)
+    - [HL7 FHIR R4](#hl7-fhir-r4)
+    - [LOINC](#loinc)
 - [Vision](#vision)
 
 # Project HygieiaShield
@@ -392,7 +392,7 @@ Those responsibilities belong to deterministic systems that produce identical ou
 
 ## Architecture Diagram
 
-![Project Screenshot](HygieiaShieldArchitecture.png)
+![Project Screenshot](HygieiaShieldArch.png)
 
 ---
 
