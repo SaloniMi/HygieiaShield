@@ -18,7 +18,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npm -r --if-present run build",
-    "dev": "npm -r dev"
+    "build:core-packages": "npm run build --workspace packages/zod-contracts && npm run build --workspace packages/clinical-protocols && npm run build --workspace services/hygieia-core",
+    "dev": "npm -r dev",
+    "seed": "tsx scripts/seed-mongo.js"
   },
   "keywords": [],
   "author": "",
