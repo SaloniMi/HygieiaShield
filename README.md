@@ -1,7 +1,27 @@
 # 🛡️ Project HygieiaShield
 
+**AI-Powered Multi-Agent Emergency Triage and Care Orchestration Ecosystem**
+
+> **From panic to preparedness.**
+> **From uncertainty to coordination.**
+> **From fragmented information to evidence-grounded decisions.**
+>
+> HygieiaShield is an AI-powered emergency intelligence ecosystem that transforms fragmented symptom reports into coordinated, clinically grounded care pathways.
+>
+> Aiming to transform emergency care from a reactive process into a coordinated, pre-arrival intelligence system
+>
+> By connecting patients, clinicians, and hospital operations before arrival, HygieiaShield enables hospitals to prepare for emergencies before the patient walks through the door.
+>
+> From first symptom to definitive care, every stakeholder operates from the same evolving picture of the patient.
+
+## 🎥 Watch the Demo
+
+**YouTube Demo:** https://youtu.be/13zVQxxF1EQ
+
+---
+
 - [🛡️ Project HygieiaShield](#️-project-hygieiashield)
-  - [AI-Powered Multi-Agent Emergency Triage and Care Orchestration Ecosystem](#ai-powered-multi-agent-emergency-triage-and-care-orchestration-ecosystem)
+  - [🎥 Watch the Demo](#-watch-the-demo)
 - [Vision](#vision)
 - [The Problem](#the-problem)
   - [Why Existing Solutions Fall Short](#why-existing-solutions-fall-short)
@@ -56,20 +76,6 @@
     - [3. Start MongoDB](#3-start-mongodb)
     - [4. Start Services](#4-start-services)
     - [5. Access Applications](#5-access-applications)
-
-### AI-Powered Multi-Agent Emergency Triage and Care Orchestration Ecosystem
-
-> **From panic to preparedness.**
-> **From uncertainty to coordination.**
-> **From fragmented information to evidence-grounded decisions.**
->
-> HygieiaShield is an AI-powered emergency intelligence ecosystem that transforms fragmented symptom reports into coordinated, clinically grounded care pathways.
->
-> Aiming to transform emergency care from a reactive process into a coordinated, pre-arrival intelligence system
->
-> By connecting patients, clinicians, and hospital operations before arrival, HygieiaShield enables hospitals to prepare for emergencies before the patient walks through the door.
->
-> From first symptom to definitive care, every stakeholder operates from the same evolving picture of the patient.
 
 ---
 
