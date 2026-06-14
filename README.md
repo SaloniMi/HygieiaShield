@@ -324,7 +324,7 @@ By separating human observations from clinician-measured vitals, HygieiaShield:
 
 Each agent performs a narrowly defined role.
 
-#### [Intake Interpreter Agent](./services/hygieia-core/src/agents/intake-interpreter/)
+### [Intake Interpreter Agent](./services/hygieia-core/src/agents/intake-interpreter/)
 
 **Model:** Azure OpenAI Model GPT-4.1-mini
 
