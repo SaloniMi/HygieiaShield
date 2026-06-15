@@ -124,7 +124,7 @@ The platform is designed to:
 - 🎙️ Capture symptoms through frictionless voice-first and tap-based intake
 - 🤖 Transform unstructured reports into structured clinical path by employing a **multi-agent** architecture
 - 📖 Determine patient acuity using grounded ESI v5 reasoning
-- 🏥 Intelligently route patients to the right facility—not simply the nearest one
+- 🏥 Determine the appropriate level of care (Emergency, Urgent Care, or Outpatient) and route patients to the optimal facility within that care pathway
 - 👁️ Give hospitals visibility before patients arrive
 - 🔄 Enable automated clinician re-triage workflows
 - 📋 Generate AI-assisted physician handoff clinical briefs in seconds
@@ -446,6 +446,11 @@ override: true
 **Purpose:**
 
 - Routes patients to the right facility—not simply the nearest one
+- Translates triage acuity into an appropriate level of care
+  - ESI 1–3 → Emergency Department
+  - ESI 4 → Urgent Care
+  - ESI 5 → Outpatient
+- Selects the optimal facility within that care category based on capacity, wait times, and operational status
 - Combines patient acuity, capacity, and operational status to determine the optimal destination
 - Dynamically balances demand across healthcare facilities during local surges
 - Manages the complete reservation lifecycle from intake to arrival
@@ -453,7 +458,7 @@ override: true
 
 The Care-Route Engine serves as the operational brain of HygieiaShield, transforming isolated hospitals into a coordinated emergency care network.
 
-**Example:**
+**Example 1:**
 
 **Input**
 
@@ -465,6 +470,23 @@ esiLevel: 1
 
 ```yaml
 careType: EMERGENCY
+facility: Northcare Hospital
+reservationToken: RAVEN-4399-S
+estimatedWaitTime: 3m
+```
+
+**Example 2:**
+
+**Input**
+
+```yaml
+esiLevel: 4
+```
+
+**Output**
+
+```yaml
+careType: Urgent Care
 facility: Northcare Hospital
 reservationToken: RAVEN-4399-S
 estimatedWaitTime: 3m
