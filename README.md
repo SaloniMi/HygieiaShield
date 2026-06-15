@@ -14,9 +14,10 @@
 >
 > From first symptom to definitive care, every stakeholder operates from the same evolving picture of the patient.
 
-## 🎥 Watch the Demo
+## 🎥 Watch for more info
 
-**YouTube Demo:** https://youtu.be/13zVQxxF1EQ
+**Demo:** https://youtu.be/13zVQxxF1EQ
+**Architecture Explanation:** https://youtu.be/7FzO1lGADYE
 
 ---
 
