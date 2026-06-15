@@ -17,6 +17,7 @@
 ## 🎥 Watch for more info
 
 **Demo:** https://youtu.be/13zVQxxF1EQ
+
 **Architecture Explanation:** https://youtu.be/7FzO1lGADYE
 
 ---
